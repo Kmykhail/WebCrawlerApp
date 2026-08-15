@@ -1,8 +1,8 @@
 #include "worker.h"
 #include <QThread>
 
-Worker::Worker(const QString &url, const QByteArray &html, QObject *parent)
-    : m_qUrl{url}
+Worker::Worker(const CrawlItem &crawlItem, const QByteArray &html, QObject *parent)
+    : m_crawlItem{crawlItem}
     , m_html{html}
     , QObject{parent} {
     setAutoDelete(true);
@@ -14,17 +14,18 @@ void Worker::run() {
       return;
     }
 
-    QSet<QString> urls;
+    QSet<CrawlItem> items;
     for (const auto &match : m_regex.globalMatch(m_html)) {
         auto rawUrl = match.captured(1);
-        QUrl normalized = m_qUrl.resolved(QUrl(rawUrl));
+        QUrl normalized = m_crawlItem.url.resolved(QUrl(rawUrl));
+
         if (!normalized.isValid() || normalized.scheme().isEmpty() || normalized.host().isEmpty()) continue;
 
         normalized.setFragment({});
         normalized = normalized.adjusted(QUrl::NormalizePathSegments);
         const QString normalizedUrl = normalized.toString(QUrl::FullyEncoded);
-        urls.insert(normalizedUrl);
+        items.insert({normalizedUrl, m_crawlItem.depth + 1});
     }
 
-    emit urlParsed(urls);
+    emit urlParsed(items);
 }

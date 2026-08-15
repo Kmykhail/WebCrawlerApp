@@ -22,7 +22,8 @@ qt_add_qml_module(appWebCrawlerApp
     VERSION 1.0
     QML_FILES
         Main.qml
-        SOURCES crawlermanager.h 
+        SOURCES crawlermanager.h
+        SOURCES CrawlItem.h
         # crawlermanager.cpp
 )
 

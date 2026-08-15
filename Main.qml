@@ -39,17 +39,22 @@ Window {
             onClicked: crawler.stop()
         }
 
-        ListView {
-            id: listview
+        ScrollView {
             width: parent.width
-            height: 300
-            model: urlModel
-            delegate: Rectangle{
-                width: listview.width; height: 25
-                color: "steelblue"
-                Text {
-                    text: model.url
-                    color: "black"
+            height: 480
+
+            ListView {
+                id: listview
+                width: parent.width
+                height: contentHeight
+                model: urlModel
+                delegate: Rectangle {
+                    width: listview.width; height: 25
+                    color: "steelblue"
+                    Text {
+                        text: "#" + (index + 1) + ": " + model.url
+                        color: "black"
+                    }
                 }
             }
         }

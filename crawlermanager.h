@@ -1,5 +1,9 @@
+#pragma once
+
 #ifndef CRAWLERMANAGER_H
 #define CRAWLERMANAGER_H
+
+#include "CrawlItem.h"
 
 #include <QNetworkAccessManager>
 #include <QQueue>
@@ -10,20 +14,16 @@
 #include <qobjectdefs.h>
 #include <qtmetamacros.h>
 
-/*
-    1. initialized
-    2. contains queue and visitesUrls containers
-    3. Need trigger when networdAccessManager started to pop elements from the queue
-    4. Load hmtl
-    5. Create QRunnable and add it to the global pool
-    6. Receive data from the QRunnable worker by signal slot
-*/
-
 class CrawlerManager : public QObject
 #include <QObject>
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
+    enum class ControlState {
+        RUN, PAUSE, STOP
+    };
+    using enum ControlState;
+
 public:
     explicit CrawlerManager(QObject *parent = nullptr);
     ~CrawlerManager();
@@ -33,7 +33,7 @@ public:
     bool isRunning() const;
 
 public slots:
-    void onUrlsParsed(const QSet<QString> &urls);
+    void onUrlsParsed(const QSet<CrawlItem> &crawledItems);
 
 signals:
     void finished();
@@ -41,13 +41,9 @@ signals:
     void newUrlFound(const QString &url);
 
 private:
-    void loadHtml(const QString &url);
+    void loadHtml(const CrawlItem &crawlItem);
     void processQueue();
     void clearThreadPool();
-    enum class ControlState {
-        RUN, PAUSE, STOP
-    };
-    using enum ControlState;
 
 private:
     int m_depth{0};
@@ -55,7 +51,7 @@ private:
     ControlState m_controlState{STOP};
 
     QThreadPool m_threadPool;
-    QQueue<QString> m_urlQueue;
+    QQueue<CrawlItem> m_urlQueue;
     QSet<QString> m_visitedUrls;
     QSet<QNetworkReply*> m_activeReplies;
 
