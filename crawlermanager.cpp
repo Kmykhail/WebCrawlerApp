@@ -2,22 +2,14 @@
 #include "worker.h"
 
 #include <QMap>
-#include <qdebug.h>
 #include <qlogging.h>
-#include <qnamespace.h>
 #include <qobject.h>
 #include <qstringliteral.h>
-#include <qstringview.h>
-#include <qtdeprecationdefinitions.h>
-#include <qthread.h>
-#include <qthreadpool.h>
-#include <qtmetamacros.h>
-#include <qtypes.h>
 
 namespace {
-constexpr qint32 MAX_URLS = 20;
+constexpr qint32 MAX_URLS = 1000;
 constexpr qint32 MAX_DEPTH = 5;
-constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 10;
+constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 20;
 } // namespace
 
 CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
@@ -26,9 +18,12 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
   m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
 
   connect(this , &CrawlerManager::finished, this, [this](){
+      auto elapsed = duration_cast<std::chrono::milliseconds>(steady_clock::now() - m_startTime);
+      qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
+
       size_t cnt = 1;
       for (const auto &url : m_visitedUrls) {
-          qInfo() << QStringLiteral("#%1, url:%2").arg(cnt++).arg(url);
+          qDebug() << QStringLiteral("#%1, url:%2").arg(cnt++).arg(url);
       }
       stop();
       clearThreadPool();
@@ -41,8 +36,9 @@ CrawlerManager::~CrawlerManager()
 }
 
 void CrawlerManager::start(const QString &url) {
-    qInfo() << Q_FUNC_INFO;
+    qDebug() << Q_FUNC_INFO;
     if (url.isEmpty() || m_controlState == RUN) return;
+    m_startTime = steady_clock::now();
 
     m_controlState = RUN;
     onUrlsParsed({ CrawlItem{QUrl{url}, 0} });
@@ -71,7 +67,7 @@ bool CrawlerManager::isRunning() const {
 }
 
 void CrawlerManager::processQueue() {
-    qInfo() << Q_FUNC_INFO;
+    qDebug() << Q_FUNC_INFO;
     if (m_controlState != RUN) return;
 
     while (!m_urlQueue.isEmpty() && m_activeDownloads < MAX_CONCURRENT_DOWNLOADS) {
@@ -92,7 +88,7 @@ void CrawlerManager::clearThreadPool()
 }
 
 void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
-  qInfo() << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO;
   if (m_controlState != RUN) return;
 
   QNetworkRequest request(crawlItem.url);
@@ -128,7 +124,7 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 }
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
-  qInfo() << Q_FUNC_INFO;
+  qDebug() << Q_FUNC_INFO;
   if (m_visitedUrls.size() >= MAX_URLS) {
       emit finished();
       return;

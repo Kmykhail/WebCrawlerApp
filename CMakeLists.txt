@@ -42,6 +42,9 @@ target_link_libraries(appWebCrawlerApp
     PRIVATE Qt6::Quick Qt6::Network
 )
 
+# Define QT_NO_DEBUG_OUTPUT for Release builds
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT")
+
 include(GNUInstallDirs)
 install(TARGETS appWebCrawlerApp
     BUNDLE DESTINATION .

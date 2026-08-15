@@ -30,7 +30,7 @@ QHash<int, QByteArray> UrlModel::roleNames() const {
 }
 
 void UrlModel::addUrl(const QString &url) {
-    qInfo() << QStringLiteral("UrlModel, addUrl: %1, m_urls.size: %2").arg(url).arg(m_urls.size());
+    qDebug() << QStringLiteral("UrlModel, addUrl: %1, m_urls.size: %2").arg(url).arg(m_urls.size());
     beginInsertRows(QModelIndex(), m_urls.size(), m_urls.size());
     m_urls.emplace_back(url);
     endInsertRows();

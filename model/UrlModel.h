@@ -14,10 +14,6 @@
 class UrlModel: public QAbstractListModel {
     Q_OBJECT
 public:
-    // struct UrlEnty {
-    //     // int id;
-    //     QString url;
-    // };
 
     enum UrlRoles {
         UrlRole = Qt::UserRole + 1

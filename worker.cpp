@@ -8,7 +8,6 @@ Worker::Worker(const CrawlItem &crawlItem, const QByteArray &html, QObject *pare
     setAutoDelete(true);
 }
 void Worker::run() {
-    qDebug() << "Worker threda id: " << QThread::currentThreadId();
     if (m_html.isEmpty()) {
       qWarning() << "Empty html";
       return;

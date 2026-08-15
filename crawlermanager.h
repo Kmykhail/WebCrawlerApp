@@ -7,12 +7,13 @@
 
 #include <QNetworkAccessManager>
 #include <QQueue>
-#include <QRunnable>
-#include <QTimer>
 #include <QThreadPool>
 #include <QNetworkReply>
 #include <qobjectdefs.h>
 #include <qtmetamacros.h>
+#include <chrono>
+
+using namespace std::chrono;
 
 class CrawlerManager : public QObject
 #include <QObject>
@@ -57,6 +58,9 @@ private:
 
     QString m_header{"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"};
     QNetworkAccessManager *m_networkAccessManager{nullptr};
+
+    // measurements
+    steady_clock::time_point m_startTime;
 };
 
 
