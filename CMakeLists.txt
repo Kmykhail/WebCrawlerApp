@@ -10,11 +10,22 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Network Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+add_library(webcrawler_lib
+    crawlermanager.cpp
+    worker.cpp
+    model/UrlModel.cpp
+)
+
+target_link_libraries(webcrawler_lib
+    PRIVATE Qt6::Core Qt6::Network
+)
+
 qt_add_executable(appWebCrawlerApp
     main.cpp
-    worker.cpp
-    crawlermanager.cpp
-    model/UrlModel.cpp
+)
+
+target_link_libraries(appWebCrawlerApp
+    PRIVATE webcrawler_lib Qt6::Quick
 )
 
 qt_add_qml_module(appWebCrawlerApp
@@ -22,24 +33,6 @@ qt_add_qml_module(appWebCrawlerApp
     VERSION 1.0
     QML_FILES
         Main.qml
-        SOURCES crawlermanager.h
-        SOURCES CrawlItem.h
-        # crawlermanager.cpp
-)
-
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
-set_target_properties(appWebCrawlerApp PROPERTIES
-#    MACOSX_BUNDLE_GUI_IDENTIFIER com.example.appWebCrawlerApp
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
-    WIN32_EXECUTABLE TRUE
-)
-
-target_link_libraries(appWebCrawlerApp
-    PRIVATE Qt6::Quick Qt6::Network
 )
 
 # Define QT_NO_DEBUG_OUTPUT for Release builds
@@ -51,3 +44,5 @@ install(TARGETS appWebCrawlerApp
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+add_subdirectory(tests)

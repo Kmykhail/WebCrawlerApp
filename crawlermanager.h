@@ -12,6 +12,7 @@
 #include <qobjectdefs.h>
 #include <qtmetamacros.h>
 #include <chrono>
+#include <gtest/gtest_prod.h>
 
 using namespace std::chrono;
 
@@ -45,6 +46,7 @@ private:
     void loadHtml(const CrawlItem &crawlItem);
     void processQueue();
     void clearThreadPool();
+    FRIEND_TEST(CrawlerManagerTest, CheckUrlQueue);
 
 private:
     int m_depth{0};

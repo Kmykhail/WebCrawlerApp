@@ -88,8 +88,13 @@ void CrawlerManager::clearThreadPool()
 }
 
 void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
-  qDebug() << Q_FUNC_INFO;
-  if (m_controlState != RUN) return;
+    qDebug() << Q_FUNC_INFO;
+    if (m_controlState != RUN) {
+        if (m_controlState == PAUSE) {
+            m_urlQueue.prepend(crawlItem);
+        }
+        return;
+    }
 
   QNetworkRequest request(crawlItem.url);
   request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
@@ -107,7 +112,12 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
       {
           auto html = reply->readAll();
           reply->deleteLater();
-          if (m_controlState != RUN) return;
+          if (m_controlState != RUN) {
+              if (m_controlState == PAUSE) {
+                  m_urlQueue.prepend(crawlItem);
+              }
+              return;
+          }
 
           Worker *worker = new Worker(crawlItem, html);
           connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
