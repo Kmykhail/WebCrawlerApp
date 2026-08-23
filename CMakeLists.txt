@@ -10,10 +10,19 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Network Core)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+include_directories(
+    src/domain
+    src/domain/worker
+    src/model/
+)
+
 add_library(webcrawler_lib
-    crawlermanager.cpp
-    worker.cpp
-    model/UrlModel.cpp
+    src/domain/crawlermanager.cpp
+    src/domain/worker/worker.cpp
+    src/model/UrlModel.cpp
+    src/domain/CrawlItem.h
+    src/controller/crawlercontroller.cpp
+    src/domain/UrlData.h
 )
 
 target_link_libraries(webcrawler_lib
@@ -21,7 +30,7 @@ target_link_libraries(webcrawler_lib
 )
 
 qt_add_executable(appWebCrawlerApp
-    main.cpp
+    src/main.cpp
 )
 
 target_link_libraries(appWebCrawlerApp
@@ -32,7 +41,10 @@ qt_add_qml_module(appWebCrawlerApp
     URI WebCrawlerApp
     VERSION 1.0
     QML_FILES
-        Main.qml
+        src/qml/Main.qml
+        src/qml/components/HeaderBar.qml
+        src/qml/components/ControlPanel.qml
+        src/qml/components/UrlListView.qml
 )
 
 # Define QT_NO_DEBUG_OUTPUT for Release builds

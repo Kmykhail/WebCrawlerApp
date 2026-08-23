@@ -4,6 +4,7 @@
 #define CRAWLERMANAGER_H
 
 #include "CrawlItem.h"
+#include "UrlData.h"
 
 #include <QNetworkAccessManager>
 #include <QQueue>
@@ -20,7 +21,11 @@ class CrawlerManager : public QObject
 #include <QObject>
 {
     Q_OBJECT
+    Q_DISABLE_COPY(CrawlerManager);
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool urlLimit READ getUrlLimit WRITE setUrlLimit NOTIFY urlLimitChanged)
+    Q_PROPERTY(bool urlDepth READ getUrlDepth WRITE setUrlDepth NOTIFY urlDepthChanged)
+
     enum class ControlState {
         RUN, PAUSE, STOP
     };
@@ -34,13 +39,21 @@ public:
     Q_INVOKABLE void stop();
     bool isRunning() const;
 
+    qint32 getUrlLimit() const;
+    void setUrlLimit(qint32 urlLimit);
+
+    qint32 getUrlDepth() const;
+    void setUrlDepth(qint32 urlDepth);
+
 public slots:
     void onUrlsParsed(const QSet<CrawlItem> &crawledItems);
 
 signals:
     void finished();
     void runningChanged();
-    void newUrlFound(const QString &url);
+    void urlsDiscovered(const QList<UrlData> &batch);
+    void urlLimitChanged(const qint32 urlLimit);
+    void urlDepthChanged(const qint32 urlDepth);
 
 private:
     void loadHtml(const CrawlItem &crawlItem);
@@ -49,8 +62,9 @@ private:
     FRIEND_TEST(CrawlerManagerTest, CheckUrlQueue);
 
 private:
-    int m_depth{0};
-    int m_activeDownloads{0};
+    qint32 m_depth{0};
+    qint32 m_limit{0};
+    qint32 m_activeDownloads{0};
     ControlState m_controlState{STOP};
 
     QThreadPool m_threadPool;

@@ -9,14 +9,19 @@
 #include <qstringview.h>
 #include <qtmetamacros.h>
 #include <qvariant.h>
+#include <QTime>
 
+#include "UrlData.h"
 
 class UrlModel: public QAbstractListModel {
     Q_OBJECT
-public:
 
+public:
     enum UrlRoles {
-        UrlRole = Qt::UserRole + 1
+        UrlRole = Qt::UserRole + 1,
+        TimeRole,
+        StatusRole,
+        DepthRole,
     };
 
     explicit UrlModel(QObject *parent = nullptr);
@@ -25,8 +30,9 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    Q_INVOKABLE void addUrl(const QString &url);
+public slots:
+    void onUrlsDiscovered(const QList<UrlData> &batch);
 
 private:
-    QStringList m_urls;
+    QList<UrlData> m_urlData;
 };

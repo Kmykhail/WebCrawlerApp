@@ -5,29 +5,31 @@
 #include <qlogging.h>
 #include <qobject.h>
 #include <qstringliteral.h>
+#include <QTime>
 
 namespace {
-constexpr qint32 MAX_URLS = 1000;
-constexpr qint32 MAX_DEPTH = 5;
+constexpr qint32 DEFAULT_LIMIT = 1000;
+constexpr qint32 DEFAULT_DEPTH = 3;
 constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 20;
 } // namespace
 
 CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
-  m_networkAccessManager = new QNetworkAccessManager(this);
-  m_depth = MAX_DEPTH;
-  m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
+    m_networkAccessManager = new QNetworkAccessManager(this);
+    m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
+    setUrlLimit(DEFAULT_LIMIT);
+    setUrlDepth(DEFAULT_DEPTH);
 
-  connect(this , &CrawlerManager::finished, this, [this](){
-      auto elapsed = duration_cast<std::chrono::milliseconds>(steady_clock::now() - m_startTime);
-      qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
+    connect(this , &CrawlerManager::finished, this, [this](){
+        auto elapsed = duration_cast<std::chrono::milliseconds>(steady_clock::now() - m_startTime);
+        qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
 
-      size_t cnt = 1;
-      for (const auto &url : m_visitedUrls) {
+        size_t cnt = 1;
+        for (const auto &url : m_visitedUrls) {
           qDebug() << QStringLiteral("#%1, url:%2").arg(cnt++).arg(url);
-      }
-      stop();
-      clearThreadPool();
-  });
+        }
+        stop();
+        clearThreadPool();
+    });
 }
 
 CrawlerManager::~CrawlerManager()
@@ -64,6 +66,32 @@ void CrawlerManager::stop() {
 
 bool CrawlerManager::isRunning() const {
   return m_controlState == RUN;
+}
+
+qint32 CrawlerManager::getUrlLimit() const
+{
+    return m_limit;
+}
+
+void CrawlerManager::setUrlLimit(qint32 urlLimit)
+{
+    if (m_controlState != RUN && urlLimit != m_limit) {
+        m_limit = urlLimit;
+        emit urlLimitChanged(m_limit);
+    }
+}
+
+qint32 CrawlerManager::getUrlDepth() const
+{
+    return m_depth;
+}
+
+void CrawlerManager::setUrlDepth(qint32 urlDepth)
+{
+    if (m_controlState != RUN && urlDepth != m_depth) {
+        m_depth = urlDepth;
+        emit urlDepthChanged(m_depth);
+    }
 }
 
 void CrawlerManager::processQueue() {
@@ -135,21 +163,28 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
   qDebug() << Q_FUNC_INFO;
-  if (m_visitedUrls.size() >= MAX_URLS) {
+  if (m_visitedUrls.size() >= m_limit) {
       emit finished();
       return;
   }
 
+  QList<UrlData> batch;
+  batch.reserve(crawledItems.size());
   for (const auto &item : crawledItems) {
-    if (m_visitedUrls.size() >= MAX_URLS) break;
+    if (m_visitedUrls.size() >= m_limit) break;
 
     auto strUrl = item.url.toString();
     if (!m_visitedUrls.contains(strUrl)) {
+        batch.append({strUrl, QTime::currentTime(), 200, item.depth});
+
         m_visitedUrls.insert(strUrl);
         m_urlQueue.enqueue(item);
-
-        emit newUrlFound(strUrl);
     }
+  }
+
+  if (!batch.isEmpty()) {
+      batch.shrink_to_fit();
+      emit urlsDiscovered(batch);
   }
 
   processQueue();
