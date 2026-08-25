@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include <QAbstractListModel>
+#include <QAbstractTableModel>
 #include <qabstractitemmodel.h>
 #include <qhashfunctions.h>
 #include <qnamespace.h>
@@ -13,7 +13,7 @@
 
 #include "UrlData.h"
 
-class UrlModel: public QAbstractListModel {
+class UrlModel: public QAbstractTableModel {
     Q_OBJECT
 
 public:
@@ -22,11 +22,14 @@ public:
         TimeRole,
         StatusRole,
         DepthRole,
+        ColumnCount
     };
+    Q_ENUM(UrlRoles)
 
     explicit UrlModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 

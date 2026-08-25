@@ -8,7 +8,7 @@
 #include <QTime>
 
 namespace {
-constexpr qint32 DEFAULT_LIMIT = 1000;
+constexpr qint32 DEFAULT_LIMIT = 10000;
 constexpr qint32 DEFAULT_DEPTH = 3;
 constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 20;
 } // namespace
@@ -43,12 +43,14 @@ void CrawlerManager::start(const QString &url) {
     m_startTime = steady_clock::now();
 
     m_controlState = RUN;
+    emit controlStateChanged();
     onUrlsParsed({ CrawlItem{QUrl{url}, 0} });
 }
 
 void CrawlerManager::pause() {
     if (m_controlState == RUN) {
         m_controlState = PAUSE;
+        emit controlStateChanged();
     }
 }
 
@@ -61,7 +63,7 @@ void CrawlerManager::stop() {
         (*it)->abort();
     }
 
-    emit runningChanged();
+    emit controlStateChanged();
 }
 
 bool CrawlerManager::isRunning() const {
@@ -92,6 +94,11 @@ void CrawlerManager::setUrlDepth(qint32 urlDepth)
         m_depth = urlDepth;
         emit urlDepthChanged(m_depth);
     }
+}
+
+CrawlerManager::ControlState CrawlerManager::getControlState() const
+{
+    return m_controlState;
 }
 
 void CrawlerManager::processQueue() {
@@ -162,30 +169,30 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 }
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
-  qDebug() << Q_FUNC_INFO;
-  if (m_visitedUrls.size() >= m_limit) {
-      emit finished();
-      return;
-  }
-
-  QList<UrlData> batch;
-  batch.reserve(crawledItems.size());
-  for (const auto &item : crawledItems) {
-    if (m_visitedUrls.size() >= m_limit) break;
-
-    auto strUrl = item.url.toString();
-    if (!m_visitedUrls.contains(strUrl)) {
-        batch.append({strUrl, QTime::currentTime(), 200, item.depth});
-
-        m_visitedUrls.insert(strUrl);
-        m_urlQueue.enqueue(item);
+    qDebug() << Q_FUNC_INFO;
+    if (m_visitedUrls.size() >= m_limit) {
+        emit finished();
+        return;
     }
-  }
 
-  if (!batch.isEmpty()) {
-      batch.shrink_to_fit();
-      emit urlsDiscovered(batch);
-  }
+    QList<UrlData> batch;
+    batch.reserve(crawledItems.size());
+    for (const auto &item : crawledItems) {
+        if (m_visitedUrls.size() >= m_limit) break;
+
+        auto strUrl = item.url.toString();
+        if (!m_visitedUrls.contains(strUrl)) {
+            batch.append({strUrl, QTime::currentTime(), 200, item.depth});
+
+            m_visitedUrls.insert(strUrl);
+            m_urlQueue.enqueue(item);
+        }
+    }
+
+    if (!batch.isEmpty()) {
+        batch.shrink_to_fit();
+        emit urlsDiscovered(batch);
+    }
 
   processQueue();
 }

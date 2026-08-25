@@ -25,10 +25,12 @@ class CrawlerManager : public QObject
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
     Q_PROPERTY(bool urlLimit READ getUrlLimit WRITE setUrlLimit NOTIFY urlLimitChanged)
     Q_PROPERTY(bool urlDepth READ getUrlDepth WRITE setUrlDepth NOTIFY urlDepthChanged)
+    Q_PROPERTY(ControlState controlState READ getControlState NOTIFY controlStateChanged)
 
     enum class ControlState {
         RUN, PAUSE, STOP
     };
+    Q_ENUM(ControlState)
     using enum ControlState;
 
 public:
@@ -45,6 +47,8 @@ public:
     qint32 getUrlDepth() const;
     void setUrlDepth(qint32 urlDepth);
 
+    ControlState getControlState() const;
+
 public slots:
     void onUrlsParsed(const QSet<CrawlItem> &crawledItems);
 
@@ -54,6 +58,7 @@ signals:
     void urlsDiscovered(const QList<UrlData> &batch);
     void urlLimitChanged(const qint32 urlLimit);
     void urlDepthChanged(const qint32 urlDepth);
+    void controlStateChanged();
 
 private:
     void loadHtml(const CrawlItem &crawlItem);

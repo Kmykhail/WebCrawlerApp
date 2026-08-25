@@ -1,35 +1,167 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
-Rectangle {
-    width: parent.width
-    height: 100
-    color: "#222"
+Item {
+    id: controlPanel
+    implicitHeight: 100
+    property var controller: null
 
-    Row {
-        anchors.centerIn: parent
-        spacing: 10
+    Component.onCompleted: {
+        if (controller == null) {
+            console.error("Controller is not initialized")
+        } else {
+            if (controller.manager === undefined) {
+                console.error("CrawlerManager is undefined");
+                return;
+            }
 
-        TextField {
-            placeholderText: "Target URL"
-            width: 300
+            let manager = controller.manager;
+            console.log("controlState: " + manager.controlState);
+
+            if (manager.urlDepth !== 0) {
+                depthSpinBox.value = manager.urlDepth;
+            }
+
+            depthSpinBox.valueChanged.connect(function () {
+                let value = depthSpinBox.value;
+                manager.urlDepth = value;
+            });
+
+            startButton.onClicked.connect(function () {
+                manager.start(textField.text);
+            });
+
+            pauseButton.onClicked.connect(function() {
+                manager.pause();
+            });
+
+            stopButton.onClicked.connect(function() {
+                manager.stop();
+            });
         }
+    }
 
-        SpinBox {
-            id: depthSpinBox
-            from: 1
-            to: 10
-            value: 3
+    Rectangle {
+        anchors.fill: parent
+        border.width: 1
+        border.color: "grey"
+        color: "#f5f5f5"
+        GridLayout {
+            anchors.centerIn: parent
+            columns: 5
+            rowSpacing: 4
+            columnSpacing: 15
+
+            // ===first row===
+            Label {
+                text: qsTr("TARGET URL")
+                color: "grey"
+            }
+
+            Label {
+                id: depthLabel
+                text: qsTr("DEPTH")
+                color: "grey"
+            }
+
+            Item { Layout.fillWidth: true }
+            Item { Layout.fillWidth: true }
+            Item { Layout.fillWidth: true }
+
+            // ===second row===
+            TextField {
+                id: textField
+                placeholderText: "Target URL"
+                implicitWidth: 300
+                text: "https://news.google.com/home?hl=uk&gl=UA&ceid=UA%3Auk" // TODO: remove it
+                color: "black"
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+            }
+
+            SpinBox {
+                id: depthSpinBox
+                from: 1
+                to: 10
+                value: 3
+
+                Layout.preferredWidth: Math.max(depthLabel.width, implicitWidth)
+
+                contentItem: TextInput {
+                    z: 2
+                    text: depthSpinBox.textFromValue(depthSpinBox.value, depthSpinBox.locale)
+                    font: depthSpinBox.font
+                    color: "black"
+                    horizontalAlignment: Qt.AlignHCenter
+                    verticalAlignment: Qt.AlignVCenter
+                    readOnly: depthSpinBox.editable
+                    validator: depthSpinBox.validator
+                    inputMethodHints: depthSpinBox.inputMethodHints
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+            }
+
+            Button {
+                id: startButton
+                text: "START"
+                contentItem: Text {
+                    text: startButton.text
+                    font: startButton.font
+                    color: "grey"
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+            }
+
+            Button {
+                id: pauseButton
+                text: "PAUSE"
+                contentItem: Text {
+                    text: pauseButton.text
+                    font: pauseButton.font
+                    color: "grey"
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+            }
+
+            Button {
+                id: stopButton
+                text: "STOP"
+                contentItem: Text {
+                    text: stopButton.text
+                    font: stopButton.font
+                    color: "grey"
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+            }
         }
-
-        ComboBox {
-            id: pageLimitComboBox
-            model: ["10 pages", "25 pages", "50 pages"]
-            currentIndex: 1
-        }
-
-        Button { text: "START" }
-        Button { text: "PAUSE" }
-        Button { text: "STOP" }
     }
 }

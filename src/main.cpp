@@ -1,10 +1,10 @@
-#include "crawlermanager.h"
-#include "model/UrlModel.h"
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <qcoreapplication.h>
 #include <qobject.h>
 #include <qqml.h>
+
+#include "crawlercontroller.h"
 
 int main(int argc, char *argv[])
 {
@@ -18,8 +18,7 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
-    qmlRegisterType<CrawlerManager>("Crawler", 1, 0, "CrawlerManager");
-    qmlRegisterType<UrlModel>("Crawler", 1, 0, "UrlModel");
+    qmlRegisterType<CrawlerController>("Crawler", 1, 0, "CrawlerController");
     engine.loadFromModule("WebCrawlerApp", "Main");
 
     return app.exec();

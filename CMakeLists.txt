@@ -14,6 +14,7 @@ include_directories(
     src/domain
     src/domain/worker
     src/model/
+    src/controller
 )
 
 add_library(webcrawler_lib
@@ -44,7 +45,7 @@ qt_add_qml_module(appWebCrawlerApp
         src/qml/Main.qml
         src/qml/components/HeaderBar.qml
         src/qml/components/ControlPanel.qml
-        src/qml/components/UrlListView.qml
+        src/qml/components/UrlTableView.qml
 )
 
 # Define QT_NO_DEBUG_OUTPUT for Release builds
