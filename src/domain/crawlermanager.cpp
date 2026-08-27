@@ -54,6 +54,15 @@ void CrawlerManager::pause() {
     }
 }
 
+void CrawlerManager::resume()
+{
+    if (m_controlState == PAUSE) {
+        m_controlState = RUN;
+        emit controlStateChanged();
+        processQueue();
+    }
+}
+
 void CrawlerManager::stop() {
     m_controlState = STOP;
     m_urlQueue.clear();

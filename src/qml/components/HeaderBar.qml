@@ -19,9 +19,12 @@ Item {
             font.bold: true
         }
 
+        Item {
+            Layout.fillWidth: true
+        }
+
         Text {
             text: qsTr("DISCOVERED")
-            Layout.alignment: Qt.AlignRight
         }
 
         Text {

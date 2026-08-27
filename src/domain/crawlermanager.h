@@ -28,7 +28,7 @@ class CrawlerManager : public QObject
     Q_PROPERTY(ControlState controlState READ getControlState NOTIFY controlStateChanged)
 
     enum class ControlState {
-        RUN, PAUSE, STOP
+        RUN, PAUSE, RESUME, STOP
     };
     Q_ENUM(ControlState)
     using enum ControlState;
@@ -38,6 +38,7 @@ public:
     ~CrawlerManager();
     Q_INVOKABLE void start(const QString &url);
     Q_INVOKABLE void pause();
+    Q_INVOKABLE void resume();
     Q_INVOKABLE void stop();
     bool isRunning() const;
 
@@ -83,6 +84,5 @@ private:
     // measurements
     steady_clock::time_point m_startTime;
 };
-
 
 #endif // CRAWLERMANAGER_H
