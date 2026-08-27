@@ -19,7 +19,7 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
     setUrlLimit(DEFAULT_LIMIT);
     setUrlDepth(DEFAULT_DEPTH);
 
-    connect(this , &CrawlerManager::finished, this, [this](){
+    connect(this, &CrawlerManager::finished, this, [this](){
         auto elapsed = duration_cast<std::chrono::milliseconds>(steady_clock::now() - m_startTime);
         qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
 

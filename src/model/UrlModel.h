@@ -22,7 +22,6 @@ public:
         TimeRole,
         StatusRole,
         DepthRole,
-        ColumnCount
     };
     Q_ENUM(UrlRoles)
 

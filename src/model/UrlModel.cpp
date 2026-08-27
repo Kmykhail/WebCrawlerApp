@@ -14,7 +14,7 @@ int UrlModel::rowCount(const QModelIndex &parent) const {
 
 int UrlModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
-    return ColumnCount - UrlRole;
+    return 5;
 }
 
 QVariant UrlModel::data(const QModelIndex &index, int role) const {

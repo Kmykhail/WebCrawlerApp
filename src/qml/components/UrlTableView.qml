@@ -32,10 +32,11 @@ Item {
                     anchors.centerIn: parent
                     text: {
                         switch(index) {
-                            case 0: return qsTr("Url")
-                            case 1: return qsTr("Time")
-                            case 2: return qsTr("Status")
-                            case 3: return qsTr("Depth")
+                            case 0: return "#"
+                            case 1: return qsTr("Url")
+                            case 2: return qsTr("Time")
+                            case 3: return qsTr("Status")
+                            case 4: return qsTr("Depth")
                             default: return ""
                         }
                     }
@@ -53,15 +54,17 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
 
             columnWidthProvider: function(column) {
-                var totalWidth = tableView.width;
                 switch(column) {
-                    case 0: return totalWidth * 0.55;
-                    case 1: return totalWidth * 0.15;
-                    case 2: return totalWidth * 0.15;
-                    case 3: return totalWidth * 0.15;
+                    case 0: return tableView.width * 0.1;
+                    case 1: return tableView.width * 0.5;
+                    case 2: return tableView.width * 0.15;
+                    case 3: return tableView.width * 0.1;
+                    case 4: return tableView.width * 0.15;
                     default: return 100;
                 }
             }
+
+            onWidthChanged: tableView.forceLayout()
 
             rowHeightProvider: function(row) {
                 return 40;
@@ -81,10 +84,11 @@ Item {
                     text: {
                         if (url === undefined) return ""
                         switch(column) {
-                            case 0: return url
-                            case 1: return Qt.formatTime(time, "hh:mm:ss")
-                            case 2: return status
-                            case 3: return depth
+                            case 0: return index + 1
+                            case 1: return url
+                            case 2: return Qt.formatTime(time, "hh:mm:ss")
+                            case 3: return status
+                            case 4: return depth
                             default: return ""
                         }
                     }

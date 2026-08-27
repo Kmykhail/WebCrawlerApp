@@ -7,6 +7,11 @@ CrawlerController::CrawlerController(QObject *parent)
 {
     connect(m_manager, &CrawlerManager::urlsDiscovered,
                m_model, &UrlModel::onUrlsDiscovered);
+    connect(m_manager, &CrawlerManager::urlsDiscovered,
+                this, [this](const QList<UrlData> &batch) {
+        m_discovered += batch.size();
+        emit discoveredChanged();
+    });
 }
 
 CrawlerManager *CrawlerController::manager() const
@@ -17,4 +22,9 @@ CrawlerManager *CrawlerController::manager() const
 UrlModel *CrawlerController::model() const
 {
     return m_model;
+}
+
+qint32 CrawlerController::discovered() const
+{
+    return m_discovered;
 }

@@ -23,6 +23,7 @@ ApplicationWindow {
 
         HeaderBar {
             Layout.fillWidth: true
+            controller: controller
         }
 
         ControlPanel {
