@@ -11,15 +11,18 @@ namespace {
 constexpr qint32 DEFAULT_LIMIT = 10000;
 constexpr qint32 DEFAULT_DEPTH = 3;
 constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 20;
+constexpr qint32 FETCH_BATCH_THRESHOLD = 30;
 } // namespace
 
 CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
     m_networkAccessManager = new QNetworkAccessManager(this);
     m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
+    m_statusUpdateBatch.reserve(FETCH_BATCH_THRESHOLD);
     setUrlLimit(DEFAULT_LIMIT);
     setUrlDepth(DEFAULT_DEPTH);
 
     connect(this, &CrawlerManager::finished, this, [this](){
+#ifdef QT_DEBUG
         auto elapsed = duration_cast<std::chrono::milliseconds>(steady_clock::now() - m_startTime);
         qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
 
@@ -27,6 +30,7 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
         for (const auto &url : m_visitedUrls) {
           qDebug() << QStringLiteral("#%1, url:%2").arg(cnt++).arg(url);
         }
+#endif
         stop();
         clearThreadPool();
     });
@@ -43,7 +47,10 @@ CrawlerManager::~CrawlerManager()
 void CrawlerManager::start(const QString &url) {
     qDebug() << Q_FUNC_INFO;
     if (url.isEmpty() || m_controlState == RUN) return;
+
+#ifdef QT_DEBUG
     m_startTime = steady_clock::now();
+#endif
 
     m_controlState = RUN;
     emit controlStateChanged();
@@ -71,6 +78,10 @@ void CrawlerManager::stop() {
     m_controlState = STOP;
     m_urlQueue.clear();
     m_visitedUrls.clear();
+    if (!m_statusUpdateBatch.isEmpty()) {
+        emit updateStatuses(m_statusUpdateBatch);
+        m_statusUpdateBatch.clear();
+    }
 
     const QSet<QNetworkReply*> repliesToAbort = m_activeReplies;
     for (auto *reply: repliesToAbort) {
@@ -143,41 +154,49 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
         return;
     }
 
-  QNetworkRequest request(crawlItem.url);
-  request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
-  QNetworkReply *reply = m_networkAccessManager->get(request);
-  m_activeReplies.insert(reply);
-  connect(reply, &QNetworkReply::finished, this, [this, reply, crawlItem]() {
-    m_activeReplies.remove(reply);
-      m_activeDownloads--;
+    QNetworkRequest request(crawlItem.url);
+    request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
+    QNetworkReply *reply = m_networkAccessManager->get(request);
+    m_activeReplies.insert(reply);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, crawlItem]() {
+        m_activeReplies.remove(reply);
+        m_activeDownloads--;
 
-      switch (auto error = reply->error(); error) {
-      case QNetworkReply::OperationCanceledError: // ignore `abort` which will come form CrawlerManager::stop
-          reply->deleteLater();
-          return;
-      case QNetworkReply::NoError: // valid case
-      {
-          auto html = reply->readAll();
-          reply->deleteLater();
-          if (m_controlState != RUN) {
-              if (m_controlState == PAUSE) {
-                  m_urlQueue.prepend(crawlItem);
-              }
-              return;
+        switch (auto error = reply->error(); error) {
+            case QNetworkReply::OperationCanceledError: // ignore `abort` which will come form CrawlerManager::stop
+                reply->deleteLater();
+                return;
+            case QNetworkReply::NoError: // valid case
+            {
+                if (m_statusUpdateBatch.size() >= FETCH_BATCH_THRESHOLD) {
+                    emit updateStatuses(m_statusUpdateBatch);
+                    m_statusUpdateBatch.clear();
+                }
+
+                auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+                auto html = reply->readAll();
+                reply->deleteLater();
+                if (m_controlState != RUN) {
+                    if (m_controlState == PAUSE) {
+                      m_urlQueue.prepend(crawlItem);
+                    }
+                    return;
+                }
+
+                m_statusUpdateBatch[crawlItem.url.toString()] = statusCode;
+
+                Worker *worker = new Worker(crawlItem, html);
+                connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
+                m_threadPool.start(worker);
+                return;
+            }
+            default: // for the rest errors
+                qWarning() << QStringLiteral("Network error: %1 for url: %2").arg(error).arg(crawlItem.url.toString());
+                reply->deleteLater();
+                processQueue();
+                return;
           }
-
-          Worker *worker = new Worker(crawlItem, html);
-          connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
-          m_threadPool.start(worker);
-          return;
-      }
-      default: // for the rest errors
-          qWarning() << QStringLiteral("Network error: %1 for url: %2").arg(error).arg(crawlItem.url.toString());
-          reply->deleteLater();
-          processQueue();
-          return;
-      }
-  });
+    });
 }
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
@@ -194,7 +213,7 @@ void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
 
         auto strUrl = item.url.toString();
         if (!m_visitedUrls.contains(strUrl)) {
-            batch.append({strUrl, QTime::currentTime(), 200, item.depth});
+            batch.append({strUrl, QTime::currentTime(), 0, item.depth});
 
             m_visitedUrls.insert(strUrl);
             m_urlQueue.enqueue(item);

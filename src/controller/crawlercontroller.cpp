@@ -6,9 +6,9 @@ CrawlerController::CrawlerController(QObject *parent)
     , m_model{new UrlModel(this)}
 {
     connect(m_manager, &CrawlerManager::urlsDiscovered,
-               m_model, &UrlModel::onUrlsDiscovered);
+            m_model, &UrlModel::onUrlsDiscovered);
     connect(m_manager, &CrawlerManager::urlsDiscovered,
-                this, [this](const QList<UrlData> &batch) {
+            this, [this](const QList<UrlData> &batch) {
         m_state.discovered += batch.size();
         emit stateChanged();
     });
@@ -19,6 +19,9 @@ CrawlerController::CrawlerController(QObject *parent)
                           m_state.controlState == CrawlerManager::RESUME;
         emit stateChanged();
     });
+
+    connect(m_manager, &CrawlerManager::updateStatuses,
+            m_model, &UrlModel::onUpdateStatuses);
 }
 
 CrawlerManager *CrawlerController::manager() const

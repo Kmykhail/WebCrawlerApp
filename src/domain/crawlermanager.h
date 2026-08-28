@@ -6,6 +6,7 @@
 #include "CrawlItem.h"
 #include "UrlData.h"
 
+#include <QObject>
 #include <QNetworkAccessManager>
 #include <QQueue>
 #include <QThreadPool>
@@ -18,7 +19,6 @@
 using namespace std::chrono;
 
 class CrawlerManager : public QObject
-#include <QObject>
 {
     Q_OBJECT
     Q_DISABLE_COPY(CrawlerManager);
@@ -57,6 +57,7 @@ signals:
     void urlLimitChanged(const qint32 urlLimit);
     void urlDepthChanged(const qint32 urlDepth);
     void controlStateChanged();
+    void updateStatuses(const QHash<QString, quint16> &statusUpdateBatch);
 
 private:
     void loadHtml(const CrawlItem &crawlItem);
@@ -74,6 +75,7 @@ private:
     QQueue<CrawlItem> m_urlQueue;
     QSet<QString> m_visitedUrls;
     QSet<QNetworkReply*> m_activeReplies;
+    QHash<QString, quint16> m_statusUpdateBatch;
 
     QString m_header{"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"};
     QNetworkAccessManager *m_networkAccessManager{nullptr};

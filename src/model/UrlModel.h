@@ -34,7 +34,12 @@ public:
 
 public slots:
     void onUrlsDiscovered(const QList<UrlData> &batch);
+    void onUpdateStatuses(const QHash<QString, quint16> &statusCodes);
+
+private:
+    qint32 findRowByKey(const QString &key) const;
 
 private:
     QList<UrlData> m_urlData;
+    QHash<quint64, quint16> m_urlHashIndex;
 };

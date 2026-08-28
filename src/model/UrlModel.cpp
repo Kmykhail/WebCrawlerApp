@@ -62,6 +62,28 @@ void UrlModel::onUrlsDiscovered(const QList<UrlData> &batch)
     auto endRow = startRow + batch.size() - 1;
 
     beginInsertRows(QModelIndex(), startRow, endRow);
+
+    int index = startRow;
+    for (const auto &urlData: batch) {
+        m_urlHashIndex.insert(qHash(urlData.url), index++);
+    }
     m_urlData.append(batch);
+
     endInsertRows();
+}
+
+void UrlModel::onUpdateStatuses(const QHash<QString, quint16> &statusCodes)
+{
+    for (const auto &[key, value]: statusCodes.asKeyValueRange()) {
+        if (auto rowIndex = findRowByKey(key); rowIndex != -1) {
+            m_urlData[rowIndex].statusCode = value;
+            QModelIndex targetIndex = index(rowIndex, 2);
+            emit dataChanged(targetIndex, targetIndex, {Qt::DisplayRole, StatusRole});
+        }
+    }
+}
+
+qint32 UrlModel::findRowByKey(const QString &key) const
+{
+    return m_urlHashIndex.value(qHash(key), -1);
 }
