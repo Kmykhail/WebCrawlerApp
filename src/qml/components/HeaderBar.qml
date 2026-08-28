@@ -6,6 +6,20 @@ Item {
     id: headerBar
     implicitHeight: 30
     property var controller: null
+    property int elapsedTime: 0
+
+    Timer {
+        id: elapsedTimer
+        repeat: true
+        interval: 1000
+        running: controller && controller.state.running
+        onTriggered: elapsedTime++
+        onRunningChanged: {
+            // TODO: add reset
+            console.log("onRunningChanged: %i, controlState: %i",
+                        running, controller.state.controlState);
+        }
+    }
 
     RowLayout {
         id: rowLayout
@@ -32,7 +46,7 @@ Item {
                 color: "grey"
             }
             Text {
-                text: headerBar.controller ? headerBar.controller.discovered : "0"
+                text: controller ? controller.state.discovered : "0"
                 color: "black"
                 font.weight: Font.Medium
 
@@ -41,9 +55,28 @@ Item {
             }
         }
 
-        Label {
-            text: qsTr("ELAPSED")
-            color: "grey"
+        RowLayout {
+            spacing: 6
+            Label {
+                text: qsTr("ELAPSED")
+                color: "grey"
+            }
+            Text {
+                function formatTime(totalSeconds) {
+                    let hours = Math.floor(totalSeconds / 3600);
+                    let minutes = Math.floor((totalSeconds % 3600) / 60);
+                    let seconds = totalSeconds % 60;
+
+                    let pad = (num) => String(num).padStart(2, '0');
+                    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+                }
+
+                text: formatTime(elapsedTime)
+                color: "black"
+                font.weight: Font.Medium
+
+                horizontalAlignment: Text.AlignLeft
+            }
         }
     }
 }

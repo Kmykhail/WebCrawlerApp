@@ -24,6 +24,7 @@ add_library(webcrawler_lib
     src/domain/CrawlItem.h
     src/controller/crawlercontroller.cpp
     src/domain/UrlData.h
+    src/domain/CrawlerState.h
 )
 
 target_link_libraries(webcrawler_lib

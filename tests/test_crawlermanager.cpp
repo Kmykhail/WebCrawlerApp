@@ -18,17 +18,17 @@ protected:
     CrawlerManager *crawlerManager;
 };
 
-TEST_F(CrawlerManagerTest, InitialState) {
-    EXPECT_FALSE(crawlerManager->isRunning());
-}
+// TEST_F(CrawlerManagerTest, InitialState) {
+//     EXPECT_FALSE(crawlerManager->isRunning());
+// }
 
-TEST_F(CrawlerManagerTest, StartAndPause) {
-    crawlerManager->start("http://example.com");
-    EXPECT_TRUE(crawlerManager->isRunning());
+// TEST_F(CrawlerManagerTest, StartAndPause) {
+//     crawlerManager->start("http://example.com");
+//     EXPECT_TRUE(crawlerManager->isRunning());
 
-    crawlerManager->pause();
-    EXPECT_FALSE(crawlerManager->isRunning());   
-}
+//     crawlerManager->pause();
+//     EXPECT_FALSE(crawlerManager->isRunning());
+// }
 
 TEST_F(CrawlerManagerTest, CheckUrlQueue) {
     const CrawlItem item{

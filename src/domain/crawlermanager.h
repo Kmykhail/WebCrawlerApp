@@ -22,25 +22,23 @@ class CrawlerManager : public QObject
 {
     Q_OBJECT
     Q_DISABLE_COPY(CrawlerManager);
-    Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
     Q_PROPERTY(bool urlLimit READ getUrlLimit WRITE setUrlLimit NOTIFY urlLimitChanged)
     Q_PROPERTY(bool urlDepth READ getUrlDepth WRITE setUrlDepth NOTIFY urlDepthChanged)
     Q_PROPERTY(ControlState controlState READ getControlState NOTIFY controlStateChanged)
 
+public:
     enum class ControlState {
         RUN, PAUSE, RESUME, STOP
     };
     Q_ENUM(ControlState)
     using enum ControlState;
 
-public:
     explicit CrawlerManager(QObject *parent = nullptr);
     ~CrawlerManager();
     Q_INVOKABLE void start(const QString &url);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void stop();
-    bool isRunning() const;
 
     qint32 getUrlLimit() const;
     void setUrlLimit(qint32 urlLimit);
@@ -55,7 +53,6 @@ public slots:
 
 signals:
     void finished();
-    void runningChanged();
     void urlsDiscovered(const QList<UrlData> &batch);
     void urlLimitChanged(const qint32 urlLimit);
     void urlDepthChanged(const qint32 urlDepth);

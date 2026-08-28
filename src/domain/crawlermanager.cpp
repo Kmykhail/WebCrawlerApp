@@ -75,10 +75,6 @@ void CrawlerManager::stop() {
     emit controlStateChanged();
 }
 
-bool CrawlerManager::isRunning() const {
-  return m_controlState == RUN;
-}
-
 qint32 CrawlerManager::getUrlLimit() const
 {
     return m_limit;
