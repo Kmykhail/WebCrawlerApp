@@ -34,6 +34,9 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
 
 CrawlerManager::~CrawlerManager()
 {
+    if (m_controlState != STOP) {
+        stop();
+    }
     clearThreadPool();
 }
 
@@ -64,12 +67,15 @@ void CrawlerManager::resume()
 }
 
 void CrawlerManager::stop() {
+    qDebug() << Q_FUNC_INFO;
     m_controlState = STOP;
     m_urlQueue.clear();
     m_visitedUrls.clear();
 
-    for (auto it = m_activeReplies.begin(); it != m_activeReplies.end(); ++it) {
-        (*it)->abort();
+    const QSet<QNetworkReply*> repliesToAbort = m_activeReplies;
+    for (auto *reply: repliesToAbort) {
+        reply->abort();
+        reply->deleteLater();
     }
 
     emit controlStateChanged();
@@ -123,6 +129,7 @@ void CrawlerManager::processQueue() {
 
 void CrawlerManager::clearThreadPool()
 {
+    qDebug() << Q_FUNC_INFO;
     m_threadPool.clear();
     m_threadPool.waitForDone();
 }
