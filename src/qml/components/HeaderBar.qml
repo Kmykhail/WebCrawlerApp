@@ -18,8 +18,6 @@ Item {
         onTriggered: elapsedTime++
         onRunningChanged: {
             // TODO: add reset
-            console.log("onRunningChanged: %i, controlState: %i",
-                        running, controller.state.controlState);
         }
     }
 

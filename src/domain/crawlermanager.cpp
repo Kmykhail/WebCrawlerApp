@@ -6,12 +6,15 @@
 #include <qobject.h>
 #include <qstringliteral.h>
 #include <QTime>
+#include <QTimer>
 
 namespace {
 constexpr qint32 DEFAULT_LIMIT = 10000;
 constexpr qint32 DEFAULT_DEPTH = 3;
 constexpr qint32 MAX_CONCURRENT_DOWNLOADS = 20;
 constexpr qint32 FETCH_BATCH_THRESHOLD = 30;
+constexpr qint32 TIMEOUT_REQUEST_MS = 5000;
+constexpr quint16 TIMEOUT_CODE = 499;
 } // namespace
 
 CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
@@ -158,6 +161,22 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
     request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
     QNetworkReply *reply = m_networkAccessManager->get(request);
     m_activeReplies.insert(reply);
+
+    QTimer *timer = new QTimer(reply);
+    timer->setSingleShot(true);
+    timer->start(TIMEOUT_REQUEST_MS);
+
+    connect(timer, &QTimer::timeout, reply, [this, reply, crawlItem](){
+        if (m_fetchBatch.size() >= FETCH_BATCH_THRESHOLD) {
+            emit urlsFetched(m_fetchBatch);
+            m_fetchBatch.clear();
+        }
+
+        m_fetchBatch.append({crawlItem.url.toString(), QTime(), TIMEOUT_CODE, crawlItem.depth, 0});
+
+        reply->abort();
+    });
+
     connect(reply, &QNetworkReply::finished, this, [this, reply, crawlItem]() {
         m_activeReplies.remove(reply);
         m_activeDownloads--;
@@ -165,6 +184,7 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
         switch (auto error = reply->error(); error) {
             case QNetworkReply::OperationCanceledError: // ignore `abort` which will come form CrawlerManager::stop
                 reply->deleteLater();
+                processQueue();
                 return;
             case QNetworkReply::NoError: // valid case
             {
@@ -191,7 +211,16 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
                 return;
             }
             default: // for the rest errors
-                qWarning() << QStringLiteral("Network error: %1 for url: %2").arg(error).arg(crawlItem.url.toString());
+                if (m_fetchBatch.size() >= FETCH_BATCH_THRESHOLD) {
+                    emit urlsFetched(m_fetchBatch);
+                    m_fetchBatch.clear();
+                }
+
+                auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+                auto code = statusCode > 0 ? static_cast<quint16>(statusCode) : static_cast<quint16>(error);
+
+                m_fetchBatch.append({crawlItem.url.toString(), QTime(), code, crawlItem.depth, 0});
+
                 reply->deleteLater();
                 processQueue();
                 return;
