@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Crawler 1.0
 
 Item {
     id: root
@@ -32,11 +33,12 @@ Item {
                     anchors.centerIn: parent
                     text: {
                         switch(index) {
-                            case 0: return "#"
-                            case 1: return qsTr("Url")
-                            case 2: return qsTr("Time")
-                            case 3: return qsTr("Status")
-                            case 4: return qsTr("Depth")
+                            case UrlModel.NumberColumn: return "#"
+                            case UrlModel.TimeColumn: return qsTr("Time")
+                            case UrlModel.StatusColumn: return qsTr("Status")
+                            case UrlModel.DepthColumn: return qsTr("Depth")
+                            case UrlModel.UrlColumn: return qsTr("Url")
+                            case UrlModel.SizeColumn: return qsTr("Size")
                             default: return ""
                         }
                     }
@@ -55,11 +57,12 @@ Item {
 
             columnWidthProvider: function(column) {
                 switch(column) {
-                    case 0: return tableView.width * 0.1;
-                    case 1: return tableView.width * 0.5;
-                    case 2: return tableView.width * 0.15;
-                    case 3: return tableView.width * 0.1;
-                    case 4: return tableView.width * 0.15;
+                    case UrlModel.NumberColumn: return tableView.width * 0.08;
+                    case UrlModel.TimeColumn: return tableView.width * 0.15;
+                    case UrlModel.StatusColumn: return tableView.width * 0.10;
+                    case UrlModel.DepthColumn: return tableView.width * 0.10;
+                    case UrlModel.UrlColumn: return tableView.width * 0.42;
+                    case UrlModel.SizeColumn: return tableView.width * 0.15;
                     default: return 100;
                 }
             }
@@ -79,16 +82,17 @@ Item {
                     width: parent.width - 10
                     color: "white"
                     elide: Text.ElideRight
-                    horizontalAlignment: column === 0 ? Text.AlignLeft : Text.AlignHCenter
+                    horizontalAlignment: column === 0 || column === 1 ? Text.AlignLeft : Text.AlignHCenter
 
                     text: {
                         if (url === undefined) return ""
                         switch(column) {
-                            case 0: return index + 1
-                            case 1: return url
-                            case 2: return Qt.formatTime(time, "hh:mm:ss")
-                            case 3: return status
-                            case 4: return depth
+                            case UrlModel.NumberColumn: return index + 1
+                            case UrlModel.TimeColumn: return Qt.formatTime(time, "hh:mm:ss")
+                            case UrlModel.StatusColumn: return status
+                            case UrlModel.DepthColumn: return depth
+                            case UrlModel.UrlColumn: return url
+                            case UrlModel.SizeColumn: return (htmlSize / 1024).toFixed(1) + " KB"
                             default: return ""
                         }
                     }

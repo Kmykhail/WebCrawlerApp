@@ -20,8 +20,8 @@ CrawlerController::CrawlerController(QObject *parent)
         emit stateChanged();
     });
 
-    connect(m_manager, &CrawlerManager::updateStatuses,
-            m_model, &UrlModel::onUpdateStatuses);
+    connect(m_manager, &CrawlerManager::urlsFetched,
+            m_model, &UrlModel::onUrlsFetched);
 }
 
 CrawlerManager *CrawlerController::manager() const

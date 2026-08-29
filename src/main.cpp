@@ -5,6 +5,7 @@
 #include <qqml.h>
 
 #include "crawlercontroller.h"
+#include "UrlModel.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     qmlRegisterType<CrawlerController>("Crawler", 1, 0, "CrawlerController");
+    qmlRegisterUncreatableType<UrlModel>("Crawler", 1, 0, "UrlModel", "Access to enums only");
     engine.loadFromModule("WebCrawlerApp", "Main");
 
     return app.exec();

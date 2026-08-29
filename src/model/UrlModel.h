@@ -15,15 +15,26 @@
 
 class UrlModel: public QAbstractTableModel {
     Q_OBJECT
-
 public:
     enum UrlRoles {
         UrlRole = Qt::UserRole + 1,
         TimeRole,
         StatusRole,
         DepthRole,
+        SizeRole
     };
     Q_ENUM(UrlRoles)
+
+    enum Columns {
+        NumberColumn = 0,
+        TimeColumn,
+        StatusColumn,
+        DepthColumn,
+        UrlColumn,
+        SizeColumn,
+        ColumnCount
+    };
+    Q_ENUM(Columns)
 
     explicit UrlModel(QObject *parent = nullptr);
 
@@ -33,8 +44,8 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 public slots:
-    void onUrlsDiscovered(const QList<UrlData> &batch);
-    void onUpdateStatuses(const QHash<QString, quint16> &statusCodes);
+    void onUrlsDiscovered(const QList<UrlData> &rawBatch);
+    void onUrlsFetched(const QList<UrlData> &fetchBatch);
 
 private:
     qint32 findRowByKey(const QString &key) const;

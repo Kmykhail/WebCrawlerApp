@@ -5,7 +5,7 @@
 
 struct CrawlItem{
     QUrl url;
-    int depth;
+    qint32 depth;
 
     bool operator==(const CrawlItem&) const = default;
 };

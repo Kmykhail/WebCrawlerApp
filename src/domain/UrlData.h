@@ -10,8 +10,9 @@
 struct UrlData {
     QString url;
     QTime time;
-    qint32 statusCode;
+    quint16 statusCode;
     qint32 depth;
+    qsizetype htmlSize;
 };
 
 Q_DECLARE_METATYPE(UrlData)

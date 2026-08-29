@@ -17,7 +17,7 @@ constexpr qint32 FETCH_BATCH_THRESHOLD = 30;
 CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
     m_networkAccessManager = new QNetworkAccessManager(this);
     m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
-    m_statusUpdateBatch.reserve(FETCH_BATCH_THRESHOLD);
+    m_fetchBatch.reserve(FETCH_BATCH_THRESHOLD);
     setUrlLimit(DEFAULT_LIMIT);
     setUrlDepth(DEFAULT_DEPTH);
 
@@ -78,9 +78,9 @@ void CrawlerManager::stop() {
     m_controlState = STOP;
     m_urlQueue.clear();
     m_visitedUrls.clear();
-    if (!m_statusUpdateBatch.isEmpty()) {
-        emit updateStatuses(m_statusUpdateBatch);
-        m_statusUpdateBatch.clear();
+    if (!m_fetchBatch.isEmpty()) {
+        emit urlsFetched(m_fetchBatch);
+        m_fetchBatch.clear();
     }
 
     const QSet<QNetworkReply*> repliesToAbort = m_activeReplies;
@@ -168,9 +168,9 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
                 return;
             case QNetworkReply::NoError: // valid case
             {
-                if (m_statusUpdateBatch.size() >= FETCH_BATCH_THRESHOLD) {
-                    emit updateStatuses(m_statusUpdateBatch);
-                    m_statusUpdateBatch.clear();
+                if (m_fetchBatch.size() >= FETCH_BATCH_THRESHOLD) {
+                    emit urlsFetched(m_fetchBatch);
+                    m_fetchBatch.clear();
                 }
 
                 auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -183,7 +183,7 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
                     return;
                 }
 
-                m_statusUpdateBatch[crawlItem.url.toString()] = statusCode;
+                m_fetchBatch.append({crawlItem.url.toString(), QTime(), static_cast<quint16>(statusCode), crawlItem.depth, html.size()});
 
                 Worker *worker = new Worker(crawlItem, html);
                 connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
@@ -213,7 +213,7 @@ void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
 
         auto strUrl = item.url.toString();
         if (!m_visitedUrls.contains(strUrl)) {
-            batch.append({strUrl, QTime::currentTime(), 0, item.depth});
+            batch.append({strUrl, QTime::currentTime(), 0, item.depth, 0});
 
             m_visitedUrls.insert(strUrl);
             m_urlQueue.enqueue(item);
