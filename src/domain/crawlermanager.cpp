@@ -256,5 +256,3 @@ void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
 
   processQueue();
 }
-
-

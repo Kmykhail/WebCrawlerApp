@@ -7,7 +7,7 @@ import "components"
 ApplicationWindow {
     visible: true
     width: 1280
-    height: 720
+    height: 1024
     title: qsTr("WebCrawler")
     background: Rectangle {
         anchors.fill: parent
@@ -36,6 +36,11 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             controller: controller
+        }
+
+        ConsolPanel {
+            Layout.alignment: Qt.AlignBottom
+            Layout.fillWidth: true
         }
     }
 }

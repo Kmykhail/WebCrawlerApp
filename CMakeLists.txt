@@ -13,6 +13,7 @@ qt_standard_project_setup(REQUIRES 6.8)
 include_directories(
     src/domain
     src/domain/worker
+    src/logger
     src/model/
     src/controller
 )
@@ -25,6 +26,9 @@ add_library(webcrawler_lib
     src/controller/crawlercontroller.cpp
     src/domain/UrlData.h
     src/domain/CrawlerState.h
+    src/logger/logcontroller.cpp
+    src/model/logmodel.cpp
+    src/domain/LogData.h
 )
 
 target_link_libraries(webcrawler_lib
@@ -47,6 +51,7 @@ qt_add_qml_module(appWebCrawlerApp
         src/qml/components/HeaderBar.qml
         src/qml/components/ControlPanel.qml
         src/qml/components/UrlTableView.qml
+        src/qml/components/ConsolPanel.qml
 )
 
 # Define QT_NO_DEBUG_OUTPUT for Release builds
