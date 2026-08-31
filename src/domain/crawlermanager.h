@@ -28,7 +28,7 @@ class CrawlerManager : public QObject
 
 public:
     enum class ControlState {
-        RUN, PAUSE, RESUME, STOP
+        RUN, PAUSE, RESUME, STOP, IDLE
     };
     Q_ENUM(ControlState)
     using enum ControlState;
@@ -69,7 +69,7 @@ private:
     qint32 m_depth{0};
     qint32 m_limit{0};
     qint32 m_activeDownloads{0};
-    ControlState m_controlState{STOP};
+    ControlState m_controlState {IDLE};
 
     QThreadPool m_threadPool;
     QQueue<CrawlItem> m_urlQueue;

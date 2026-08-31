@@ -5,6 +5,7 @@ CrawlerController::CrawlerController(QObject *parent)
     , m_manager{new CrawlerManager(this)}
     , m_model{new UrlModel(this)}
 {
+    m_state.controlState = m_manager->getControlState();
     connect(m_manager, &CrawlerManager::urlsDiscovered,
             m_model, &UrlModel::onUrlsDiscovered);
     connect(m_manager, &CrawlerManager::urlsDiscovered,

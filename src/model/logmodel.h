@@ -7,23 +7,6 @@
 
 #include "LogData.h"
 
-// struct LogMessage {
-//     static constexpr std::size_t MaxSize = 256;
-
-//     std::array<char, MaxSize> text;
-//     std::size_t size{0};
-
-//     explicit LogMessage(const QString &msg) {
-//         auto bytes = msg.toLocal8Bit();
-//         size = std::min<std::size_t>(bytes.length(), MaxSize);
-//         std::memcpy(text.data(), bytes.constData(), size);
-//     }
-
-//     std::string_view view() const noexcept {
-//         return {text.data(), size};
-//     }
-// };
-
 class LogModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -52,6 +35,5 @@ private:
 private:
     QList<LogData> m_logData;
 };
-
 
 #endif // LOGMODEL_H

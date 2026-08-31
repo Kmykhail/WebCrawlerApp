@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<CrawlerController>("Crawler", 1, 0, "CrawlerController");
     qmlRegisterUncreatableType<UrlModel>("Crawler", 1, 0, "UrlModel", "Access to enums only");
+    qmlRegisterUncreatableType<CrawlerManager>("Crawler", 1, 0, "CrawlerManager", "Access to enums only");
     qmlRegisterSingletonInstance("Crawler", 1, 0, "LogModel", &LogModel::instance());
     engine.loadFromModule("WebCrawlerApp", "Main");
 

@@ -13,7 +13,7 @@ struct CrawlerState {
     Q_PROPERTY(qint32 discovered MEMBER discovered)
 public:
     bool running{false};
-    control_state_t controlState{control_state_t::STOP};
+    control_state_t controlState{control_state_t::IDLE};
     qint32 discovered{0};
 };
 

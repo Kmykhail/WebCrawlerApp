@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Crawler 1.0
 
 Item {
     id: headerBar
@@ -8,7 +9,7 @@ Item {
     property var controller: null
     property int elapsedTime: 0
 
-    readonly property int controlState: controller ? controller.state.controlState : -1;
+    readonly property int controlState: controller ? controller.state.controlState : CrawlerManager.IDLE;
 
     Timer {
         id: elapsedTimer
@@ -87,14 +88,16 @@ Item {
                 height: 6
                 radius: width / 2
 
-                color: controlState === 0 ? "green" :
-                       controlState === 1 ? "orange" : "red"
-                opacity: controlState === 0 ? animOpacity : 1.0
+                color: controlState === CrawlerManager.RUN ? "green" :
+                       controlState === CrawlerManager.PAUSE ? "orange" :
+                       controlState == CrawlerManager.STOP ? "red" : "grey"
+
+                opacity: controlState === CrawlerManager.RUN ? animOpacity : 1.0
                 property real animOpacity: 1.0
 
                 SequentialAnimation on opacity {
                     loops: Animation.Infinite
-                    running: controlState === 0
+                    running: controlState === CrawlerManager.RUN
                     onRunningChanged: if (!running) statusIndicator.animOpacity = 1.0
 
                     PropertyAnimation {
@@ -116,11 +119,14 @@ Item {
             }
 
             Label {
-                text: controlState === 0 ? "CRAWLING" :
-                      controlState === 1 ? "PAUSED"   : "STOPPED"
+                text: controlState === CrawlerManager.RUN ? "CRAWLING" :
+                      controlState === CrawlerManager.PAUSE ? "PAUSED"   :
+                      controlState == CrawlerManager.STOP ? "STOPPED" : "IDLE"
 
-                color: controlState === 0 ? "green"  :
-                       controlState === 1 ? "orange" : "red"
+                color: controlState === CrawlerManager.RUN ? "green"  :
+                       controlState === CrawlerManager.PAUSE ? "orange" :
+                       controlState == CrawlerManager.STOP ? "red" : "grey"
+
                 Layout.preferredWidth: 80
             }
         }
