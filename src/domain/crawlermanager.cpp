@@ -161,6 +161,7 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
         if (m_controlState == PAUSE) {
             m_urlQueue.prepend(crawlItem);
         }
+        m_activeDownloads--;
         return;
     }
 
@@ -223,6 +224,7 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
                     connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
                     m_threadPool.start(worker);
                 }
+                processQueue();
                 return;
             }
             /* TODO FIX:

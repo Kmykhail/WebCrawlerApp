@@ -5,7 +5,7 @@ import Crawler 1.0
 
 Item {
     id: root
-    property bool expanded: true
+    property bool expanded: false
     property int panelHeight: 200
     property int minHeight: 80
     property int maxHeight: 500
