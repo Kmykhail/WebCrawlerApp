@@ -31,6 +31,7 @@ QVariant UrlModel::data(const QModelIndex &index, int role) const {
             case StatusColumn: return item.statusCode;
             case DepthColumn: return item.depth;
             case SizeColumn: return item.htmlSize;
+            case FetchedColumn: return item.isFetched;
             default: return {};
         }
     }
@@ -41,6 +42,7 @@ QVariant UrlModel::data(const QModelIndex &index, int role) const {
         case StatusRole: return item.statusCode;
         case DepthRole: return item.depth;
         case SizeRole: return item.htmlSize;
+        case FetchedRole: return item.isFetched;
     }
 
     return {};
@@ -55,6 +57,7 @@ QHash<int, QByteArray> UrlModel::roleNames() const {
     roles[StatusRole] = "status";
     roles[DepthRole] = "depth";
     roles[SizeRole] = "htmlSize";
+    roles[FetchedRole] = "fetched";
 
     return roles;
 }
@@ -78,17 +81,18 @@ void UrlModel::onUrlsDiscovered(const QList<UrlData> &rawBatch)
 
 void UrlModel::onUrlsFetched(const QList<UrlData> &fetchBatch)
 {
-    for (const auto &[url, time, statusCode, depth, size]: fetchBatch) {
-        if (statusCode == 0 && size == 0) {
-            qWarning() << QStringLiteral("fetched url: %1 has invalid status: 0 and size: 0").arg(url);
+    for (const auto &batch: fetchBatch) {
+        if (batch.statusCode == 0 && batch.htmlSize == 0) {
+            qWarning() << QStringLiteral("fetched url: %1 has invalid status: 0 and size: 0").arg(batch.url);
             continue;
         }
 
-        if (auto rowIndex = findRowByKey(url); rowIndex != -1) {
-            m_urlData[rowIndex].statusCode = statusCode;
-            m_urlData[rowIndex].htmlSize = size;
+        if (auto rowIndex = findRowByKey(batch.url); rowIndex != -1) {
+            m_urlData[rowIndex].statusCode = batch.statusCode;
+            m_urlData[rowIndex].htmlSize = batch.htmlSize;
+            m_urlData[rowIndex].isFetched = true;
             QModelIndex targetIndex = index(rowIndex, StatusColumn);
-            emit dataChanged(targetIndex, index(rowIndex, SizeColumn), {Qt::DisplayRole, StatusRole, SizeRole});
+            emit dataChanged(targetIndex, index(rowIndex, FetchedColumn), {Qt::DisplayRole, StatusRole, SizeRole, FetchedRole});
         }
     }
 }

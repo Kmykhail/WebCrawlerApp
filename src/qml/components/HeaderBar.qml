@@ -41,23 +41,6 @@ Item {
 
         RowLayout {
             spacing: 6
-
-            Label {
-                text: qsTr("DISCOVERED")
-                color: "grey"
-            }
-            Text {
-                text: controller ? controller.state.discovered : "0"
-                color: "black"
-                font.weight: Font.Medium
-
-                Layout.preferredWidth: 40
-                horizontalAlignment: Text.AlignLeft
-            }
-        }
-
-        RowLayout {
-            spacing: 6
             Label {
                 text: qsTr("ELAPSED")
                 color: "grey"

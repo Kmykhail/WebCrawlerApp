@@ -21,7 +21,8 @@ public:
         TimeRole,
         StatusRole,
         DepthRole,
-        SizeRole
+        SizeRole,
+        FetchedRole
     };
     Q_ENUM(UrlRoles)
 
@@ -32,6 +33,7 @@ public:
         DepthColumn,
         UrlColumn,
         SizeColumn,
+        FetchedColumn,
         ColumnCount
     };
     Q_ENUM(Columns)

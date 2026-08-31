@@ -179,13 +179,10 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
     timer->start(TIMEOUT_REQUEST_MS);
 
     connect(timer, &QTimer::timeout, reply, [this, reply, crawlItem](){
-        if (m_fetchBatch.size() >= FETCH_BATCH_THRESHOLD) {
-            emit urlsFetched(m_fetchBatch);
-            m_fetchBatch.clear();
-        }
+        qWarning() << QStringLiteral("Url: %1, timeout: %2")
+                          .arg(crawlItem.url.toString());
 
-        m_fetchBatch.append({crawlItem.url.toString(), QTime(), TIMEOUT_CODE, crawlItem.depth, 0});
-
+        emit urlFetched({crawlItem.url.toString(), QTime(), TIMEOUT_CODE, crawlItem.depth, 0, false});
         QMetaObject::invokeMethod(reply, [reply](){
             if (reply && !reply->isFinished()) {
                 reply->abort();
@@ -221,34 +218,37 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
                 m_fetchBatch.append({crawlItem.url.toString(), QTime(), static_cast<quint16>(statusCode), crawlItem.depth, html.size()});
 
-                Worker *worker = new Worker(crawlItem, html);
-                connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
-                m_threadPool.start(worker);
+                if (m_foundUrls.size() < m_discoveredUrlLimit) {
+                    Worker *worker = new Worker(crawlItem, html);
+                    connect(worker, &Worker::urlParsed, this, &CrawlerManager::onUrlsParsed);
+                    m_threadPool.start(worker);
+                }
                 return;
             }
+            /* TODO FIX:
+            QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not de-queue request, failed to report HostNotFoundError
+            QHttpNetworkConnectionPrivate::_q_hostLookupFinished could not de-queue request, failed to report HostNotFoundError
+            */
             default: // for the rest errors
-                if (m_fetchBatch.size() >= FETCH_BATCH_THRESHOLD) {
-                    emit urlsFetched(m_fetchBatch);
-                    m_fetchBatch.clear();
-                }
-
                 auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
                 auto code = statusCode > 0 ? static_cast<quint16>(statusCode) : static_cast<quint16>(error);
                 qWarning() << QStringLiteral("Url: %1, responded with error status: %2")
                                 .arg(crawlItem.url.toString())
                                 .arg(statusCode);
 
-                m_fetchBatch.append({crawlItem.url.toString(), QTime(), code, crawlItem.depth, 0});
-
+                emit urlFetched({crawlItem.url.toString(), QTime(), code, crawlItem.depth, 0, false});
                 reply->deleteLater();
                 processQueue();
                 return;
           }
     });
+
+    emit queuedChanged(m_urlQueue.size());
 }
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
     qDebug() << Q_FUNC_INFO;
+
     QList<UrlData> batch;
     batch.reserve(crawledItems.size());
     for (const auto &item : crawledItems) {
@@ -266,6 +266,7 @@ void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
     if (!batch.isEmpty()) {
         batch.shrink_to_fit();
         emit urlsDiscovered(batch);
+        emit queuedChanged(m_urlQueue.size());
     }
 
     processQueue();

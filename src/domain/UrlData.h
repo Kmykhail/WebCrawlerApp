@@ -13,6 +13,7 @@ struct UrlData {
     quint16 statusCode;
     qint32 depth;
     qsizetype htmlSize;
+    bool isFetched{false};
 };
 
 Q_DECLARE_METATYPE(UrlData)

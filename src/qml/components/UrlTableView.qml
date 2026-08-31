@@ -39,6 +39,7 @@ Item {
                             case UrlModel.DepthColumn: return qsTr("Depth")
                             case UrlModel.UrlColumn: return qsTr("Url")
                             case UrlModel.SizeColumn: return qsTr("Size")
+                            case UrlModel.FetchedColumn: return qsTr("Fetched")
                             default: return ""
                         }
                     }
@@ -55,14 +56,15 @@ Item {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
 
-            columnWidthProvider: function(column) {
+            columnWidthProvider: function(column) { // TODO fix width
                 switch(column) {
                     case UrlModel.NumberColumn: return tableView.width * 0.08;
-                    case UrlModel.TimeColumn: return tableView.width * 0.15;
-                    case UrlModel.StatusColumn: return tableView.width * 0.10;
-                    case UrlModel.DepthColumn: return tableView.width * 0.10;
+                    case UrlModel.TimeColumn: return tableView.width * 0.08;
+                    case UrlModel.StatusColumn: return tableView.width * 0.08;
+                    case UrlModel.DepthColumn: return tableView.width * 0.08;
                     case UrlModel.UrlColumn: return tableView.width * 0.42;
                     case UrlModel.SizeColumn: return tableView.width * 0.15;
+                    case UrlModel.FetchedColumn: return tableView.width * 0.05;
                     default: return 100;
                 }
             }
@@ -93,6 +95,7 @@ Item {
                             case UrlModel.DepthColumn: return depth
                             case UrlModel.UrlColumn: return url
                             case UrlModel.SizeColumn: return (htmlSize / 1024).toFixed(1) + " KB"
+                            case UrlModel.FetchedColumn: return fetched ? "YES" : "NO"
                             default: return ""
                         }
                     }

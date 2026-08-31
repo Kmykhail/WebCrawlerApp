@@ -32,6 +32,11 @@ ApplicationWindow {
             controller: controller
         }
 
+        InfoPanel {
+            Layout.fillWidth: true
+            controller: controller
+        }
+
         UrlTableView {
             Layout.fillWidth: true
             Layout.fillHeight: true

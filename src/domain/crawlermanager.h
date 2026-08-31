@@ -58,6 +58,8 @@ signals:
     void urlDepthChanged(const qint32 urlDepth);
     void controlStateChanged();
     void urlsFetched(const QList<UrlData> &m_fetchBatch);
+    void urlFetched(const UrlData &urlData);
+    void queuedChanged(quint32 queued);
 
 private:
     void loadHtml(const CrawlItem &crawlItem);
@@ -66,8 +68,8 @@ private:
     FRIEND_TEST(CrawlerManagerTest, CheckUrlQueue);
 
 private:
-    qint32 m_depth{0};
-    qint32 m_discoveredUrlLimit{0};
+    quint32 m_depth{0};
+    quint32 m_discoveredUrlLimit{0};
     qint32 m_activeDownloads{0};
     ControlState m_controlState {IDLE};
 

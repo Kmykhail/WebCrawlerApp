@@ -52,6 +52,7 @@ qt_add_qml_module(appWebCrawlerApp
         src/qml/components/ControlPanel.qml
         src/qml/components/UrlTableView.qml
         src/qml/components/ConsolPanel.qml
+        src/qml/components/InfoPanel.qml
 )
 
 # Define QT_NO_DEBUG_OUTPUT for Release builds
