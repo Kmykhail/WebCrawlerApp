@@ -67,13 +67,13 @@ private:
 
 private:
     qint32 m_depth{0};
-    qint32 m_limit{0};
+    qint32 m_discoveredUrlLimit{0};
     qint32 m_activeDownloads{0};
     ControlState m_controlState {IDLE};
 
     QThreadPool m_threadPool;
     QQueue<CrawlItem> m_urlQueue;
-    QSet<QString> m_visitedUrls;
+    QSet<QString> m_foundUrls;
     QSet<QNetworkReply*> m_activeReplies;
     QList<UrlData> m_fetchBatch;
 

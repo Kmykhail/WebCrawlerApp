@@ -30,7 +30,7 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
         qInfo() << QStringLiteral("elapsed milliseconds: %1").arg(elapsed.count());
 
         size_t cnt = 1;
-        for (const auto &url : m_visitedUrls) {
+        for (const auto &url : m_foundUrls) {
           qDebug() << QStringLiteral("#%1, url:%2").arg(cnt++).arg(url);
         }
 #endif
@@ -41,6 +41,7 @@ CrawlerManager::CrawlerManager(QObject *parent) : QObject{parent} {
 
 CrawlerManager::~CrawlerManager()
 {
+    qDebug() << Q_FUNC_INFO;
     if (m_controlState != STOP) {
         stop();
     }
@@ -61,6 +62,7 @@ void CrawlerManager::start(const QString &url) {
 }
 
 void CrawlerManager::pause() {
+    qDebug() << Q_FUNC_INFO;
     if (m_controlState == RUN) {
         m_controlState = PAUSE;
         emit controlStateChanged();
@@ -69,6 +71,7 @@ void CrawlerManager::pause() {
 
 void CrawlerManager::resume()
 {
+    qDebug() << Q_FUNC_INFO;
     if (m_controlState == PAUSE) {
         m_controlState = RUN;
         emit controlStateChanged();
@@ -80,7 +83,7 @@ void CrawlerManager::stop() {
     qDebug() << Q_FUNC_INFO;
     m_controlState = STOP;
     m_urlQueue.clear();
-    m_visitedUrls.clear();
+    m_foundUrls.clear();
     if (!m_fetchBatch.isEmpty()) {
         emit urlsFetched(m_fetchBatch);
         m_fetchBatch.clear();
@@ -97,14 +100,16 @@ void CrawlerManager::stop() {
 
 qint32 CrawlerManager::getUrlLimit() const
 {
-    return m_limit;
+    qDebug() << Q_FUNC_INFO;
+    return m_discoveredUrlLimit;
 }
 
 void CrawlerManager::setUrlLimit(qint32 urlLimit)
 {
-    if (m_controlState != RUN && urlLimit != m_limit) {
-        m_limit = urlLimit;
-        emit urlLimitChanged(m_limit);
+    qDebug() << Q_FUNC_INFO;
+    if (m_controlState != RUN && urlLimit != m_discoveredUrlLimit) {
+        m_discoveredUrlLimit = urlLimit;
+        emit urlLimitChanged(m_discoveredUrlLimit);
     }
 }
 
@@ -115,6 +120,7 @@ qint32 CrawlerManager::getUrlDepth() const
 
 void CrawlerManager::setUrlDepth(qint32 urlDepth)
 {
+    qDebug() << Q_FUNC_INFO;
     if (m_controlState != RUN && urlDepth != m_depth) {
         m_depth = urlDepth;
         emit urlDepthChanged(m_depth);
@@ -128,6 +134,7 @@ CrawlerManager::ControlState CrawlerManager::getControlState() const
 
 void CrawlerManager::processQueue() {
     qDebug() << Q_FUNC_INFO;
+
     if (m_controlState != RUN) return;
 
     while (!m_urlQueue.isEmpty() && m_activeDownloads < MAX_CONCURRENT_DOWNLOADS) {
@@ -159,7 +166,12 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
     QNetworkRequest request(crawlItem.url);
     request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
     QNetworkReply *reply = m_networkAccessManager->get(request);
+    if (!reply) {
+        m_activeDownloads--;
+        return;
+    }
     m_activeReplies.insert(reply);
 
     QTimer *timer = new QTimer(reply);
@@ -174,7 +186,11 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
         m_fetchBatch.append({crawlItem.url.toString(), QTime(), TIMEOUT_CODE, crawlItem.depth, 0});
 
-        reply->abort();
+        QMetaObject::invokeMethod(reply, [reply](){
+            if (reply && !reply->isFinished()) {
+                reply->abort();
+            }
+        }, Qt::QueuedConnection);
     });
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, crawlItem]() {
@@ -218,6 +234,9 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
                 auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
                 auto code = statusCode > 0 ? static_cast<quint16>(statusCode) : static_cast<quint16>(error);
+                qWarning() << QStringLiteral("Url: %1, responded with error status: %2")
+                                .arg(crawlItem.url.toString())
+                                .arg(statusCode);
 
                 m_fetchBatch.append({crawlItem.url.toString(), QTime(), code, crawlItem.depth, 0});
 
@@ -230,21 +249,16 @@ void CrawlerManager::loadHtml(const CrawlItem &crawlItem) {
 
 void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
     qDebug() << Q_FUNC_INFO;
-    if (m_visitedUrls.size() >= m_limit) {
-        emit finished();
-        return;
-    }
-
     QList<UrlData> batch;
     batch.reserve(crawledItems.size());
     for (const auto &item : crawledItems) {
-        if (m_visitedUrls.size() >= m_limit) break;
+        if (m_foundUrls.size() >= m_discoveredUrlLimit) break;
 
         auto strUrl = item.url.toString();
-        if (!m_visitedUrls.contains(strUrl)) {
+        if (!m_foundUrls.contains(strUrl)) {
             batch.append({strUrl, QTime::currentTime(), 0, item.depth, 0});
 
-            m_visitedUrls.insert(strUrl);
+            m_foundUrls.insert(strUrl);
             m_urlQueue.enqueue(item);
         }
     }
@@ -254,5 +268,9 @@ void CrawlerManager::onUrlsParsed(const QSet<CrawlItem> &crawledItems) {
         emit urlsDiscovered(batch);
     }
 
-  processQueue();
+    processQueue();
+
+    if (m_foundUrls.size() >= m_discoveredUrlLimit && m_urlQueue.isEmpty() && !m_activeDownloads) {
+        emit finished();
+    }
 }
