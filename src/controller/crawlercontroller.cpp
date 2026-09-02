@@ -29,10 +29,14 @@ CrawlerController::CrawlerController(QObject *parent)
 
     connect(m_manager, &CrawlerManager::fetched,
             this, [this](const QList<UrlData> &fetchBatch){
-        m_state.fetched += fetchBatch.size();
-        m_state.failed += std::ranges::count_if(fetchBatch, [](const UrlData &data) {
+        auto failedCount = std::ranges::count_if(fetchBatch, [](const UrlData &data) {
             return data.statusCode != 200;
         });
+        auto successCount = fetchBatch.size() - failedCount;
+
+        m_state.fetched += successCount;
+        m_state.failed += failedCount;
+
         m_model->onUrlsFetched(fetchBatch);
         emit stateChanged();
     });
