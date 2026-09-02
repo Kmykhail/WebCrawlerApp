@@ -26,5 +26,5 @@ void Worker::run() {
         items.insert({normalizedUrl, m_crawlItem.depth + 1});
     }
 
-    emit urlParsed(items);
+    emit finished(items);
 }

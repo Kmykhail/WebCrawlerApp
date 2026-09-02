@@ -54,5 +54,5 @@ private:
 
 private:
     QList<UrlData> m_urlData;
-    QHash<quint64, quint16> m_urlHashIndex;
+    QHash<quint64, qint32> m_urlHashIndex;
 };

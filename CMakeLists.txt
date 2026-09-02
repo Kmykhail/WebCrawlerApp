@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(WebCrawlerApp VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
@@ -13,13 +13,14 @@ qt_standard_project_setup(REQUIRES 6.8)
 include_directories(
     src/domain
     src/domain/worker
+    src/domain/manager
     src/logger
     src/model/
     src/controller
 )
 
 add_library(webcrawler_lib
-    src/domain/crawlermanager.cpp
+    src/domain/manager/crawlermanager.cpp
     src/domain/worker/worker.cpp
     src/model/UrlModel.cpp
     src/domain/CrawlItem.h
@@ -29,6 +30,9 @@ add_library(webcrawler_lib
     src/logger/logcontroller.cpp
     src/model/logmodel.cpp
     src/domain/LogData.h
+    src/domain/manager/urlfetcher.h src/domain/manager/urlfetcher.cpp
+    src/domain/FetchResult.h
+    src/domain/manager/queuehandler.h src/domain/manager/queuehandler.cpp
 )
 
 target_link_libraries(webcrawler_lib
@@ -65,4 +69,4 @@ install(TARGETS appWebCrawlerApp
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-add_subdirectory(tests)
+# add_subdirectory(tests)

@@ -15,7 +15,7 @@ public:
     void run() override;
 
 signals:
-    void urlParsed(const QSet<CrawlItem> &crawlItems);
+    void finished(const QSet<CrawlItem> &crawlItems);
 
 private:
     const CrawlItem m_crawlItem;

@@ -79,7 +79,13 @@ Item {
                 }
                 onValueChanged: {
                     if (controller && controller.manager) {
-                        controller.manager.urlDepth = depthSpinBox.value;
+                        controller.manager.setUrlDepth(depthSpinBox.value);
+                    }
+                }
+
+                Component.onCompleted: {
+                    if (controller && controller.manager) {
+                        controller.manager.setUrlDepth(depthSpinBox.value);
                     }
                 }
             }

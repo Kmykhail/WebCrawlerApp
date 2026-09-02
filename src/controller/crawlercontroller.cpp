@@ -22,22 +22,17 @@ CrawlerController::CrawlerController(QObject *parent)
     });
 
     connect(m_manager, &CrawlerManager::queuedChanged,
-            this, [this](quint32 queued) {
+            this, [this](qsizetype queued) {
         m_state.queued = queued;
         emit stateChanged();
     });
 
-    connect(m_manager, &CrawlerManager::urlFetched,
-            this, [this](const UrlData &urlData) {
-        if (!urlData.isFetched && urlData.statusCode != 200) {
-            m_state.failed++;
-            emit stateChanged();
-        }
-    });
-
-    connect(m_manager, &CrawlerManager::urlsFetched,
+    connect(m_manager, &CrawlerManager::fetched,
             this, [this](const QList<UrlData> &fetchBatch){
         m_state.fetched += fetchBatch.size();
+        m_state.failed += std::ranges::count_if(fetchBatch, [](const UrlData &data) {
+            return data.statusCode != 200;
+        });
         m_model->onUrlsFetched(fetchBatch);
         emit stateChanged();
     });
