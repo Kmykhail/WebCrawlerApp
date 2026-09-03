@@ -1,8 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import Crawler 1.0
-import "components"
+import WebCrawlerApp 1.0
 
 ApplicationWindow {
     visible: true
@@ -46,6 +45,7 @@ ApplicationWindow {
         ConsolPanel {
             Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
+            logModel: controller.logModel
         }
     }
 }

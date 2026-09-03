@@ -1,11 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import Crawler 1.0
+import WebCrawlerApp 1.0
 
 Item {
     id: root
-    property bool expanded: false
+    property LogModel logModel: null
+    property bool expanded: true
     property int panelHeight: 200
     property int minHeight: 80
     property int maxHeight: 500
@@ -64,7 +65,7 @@ Item {
                 font.pixelSize: 10
                 implicitHeight: 22
                 onClicked: {
-                    LogModel.clear()
+                    if (logModel) logModel.clear()
                 }
             }
         }
@@ -91,11 +92,12 @@ Item {
             id: listView
             anchors.fill: parent
             anchors.margins: 4
-            model: LogModel
+            model: logModel
+            onCountChanged: positionViewAtEnd()
             delegate: Row {
                 spacing: 8
                 Text {
-                    text: Qt.formatTime(time, "hh:mm:ss")
+                    text: time
                     color: "#666"
                 }
                 Text {

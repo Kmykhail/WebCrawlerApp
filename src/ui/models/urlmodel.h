@@ -10,11 +10,14 @@
 #include <qtmetamacros.h>
 #include <qvariant.h>
 #include <QTime>
+#include <QtQml/qqmlregistration.h>
 
 #include "UrlData.h"
 
 class UrlModel: public QAbstractTableModel {
     Q_OBJECT
+    QML_UNCREATABLE("Access to enums only")
+    QML_ELEMENT
 public:
     enum UrlRoles {
         UrlRole = Qt::UserRole + 1,

@@ -1,12 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import Crawler 1.0
+import WebCrawlerApp 1.0
 
 Item {
     id: controlPanel
     implicitHeight: 100
-    property var controller: null
+    property CrawlerController controller: null
 
     Rectangle {
         anchors.fill: parent

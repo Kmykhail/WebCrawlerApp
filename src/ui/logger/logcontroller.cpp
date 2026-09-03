@@ -1,5 +1,7 @@
+#include <QTime>
+
 #include "logcontroller.h"
-#include "logmodel.h"
+#include "models/logmodel.h"
 
 LogController::LogController(QObject *parent)
     : QObject{parent}
@@ -13,7 +15,12 @@ LogController &LogController::instance()
 
 void LogController::logger(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    QByteArray formattedMessage = qFormatLogMessage(type, context, msg).toUtf8();;
+#ifdef QT_NO_DEBUG_OUTPUT
+    if (type == QtDebugMsg)
+        return;
+#endif
+
+    QByteArray formattedMessage = qFormatLogMessage(type, context, msg).toUtf8();
     fprintf(stderr, "%s\n", formattedMessage.constData());
     fflush(stderr);
 

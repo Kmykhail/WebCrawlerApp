@@ -1,6 +1,5 @@
 #include <QTimer>
 #include <QNetworkRequest>
-#include <ranges>
 
 #include "urlfetcher.h"
 

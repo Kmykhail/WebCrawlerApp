@@ -1,4 +1,4 @@
-#include "UrlModel.h"
+#include "urlmodel.h"
 #include <qabstractitemmodel.h>
 #include <qhash.h>
 #include <qobject.h>

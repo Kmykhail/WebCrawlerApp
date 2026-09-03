@@ -4,7 +4,6 @@
 #define LogController_H
 
 #include <QObject>
-// #include "logmodel.h"
 
 class LogController : public QObject
 {

@@ -19,8 +19,6 @@
 #include "urlfetcher.h"
 #include "queuehandler.h"
 
-using namespace std::chrono;
-
 class CrawlerManager : public QObject
 {
     Q_OBJECT
@@ -31,7 +29,6 @@ public:
     enum class ControlState {
         RUN, PAUSE, RESUME, STOP, IDLE
     };
-    Q_ENUM(ControlState)
     using enum ControlState;
 
     explicit CrawlerManager(QObject *parent = nullptr);

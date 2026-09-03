@@ -1,72 +1,37 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(WebCrawlerApp VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Network Core)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
-qt_standard_project_setup(REQUIRES 6.8)
+set(QML_IMPORT_PATH "${CMAKE_BINARY_DIR}" CACHE PATH "QML import path" FORCE)
 
-include_directories(
-    src/domain
-    src/domain/worker
-    src/domain/manager
-    src/logger
-    src/model/
-    src/controller
+find_package(Qt6 REQUIRED COMPONENTS
+    Core
+    Network
+    Gui
+    Qml
+    Quick
 )
 
-add_library(webcrawler_lib
-    src/domain/manager/crawlermanager.cpp
-    src/domain/worker/worker.cpp
-    src/model/UrlModel.cpp
-    src/domain/CrawlItem.h
-    src/controller/crawlercontroller.cpp
-    src/domain/UrlData.h
-    src/domain/CrawlerState.h
-    src/logger/logcontroller.cpp
-    src/model/logmodel.cpp
-    src/domain/LogData.h
-    src/domain/manager/urlfetcher.h src/domain/manager/urlfetcher.cpp
-    src/domain/FetchResult.h
-    src/domain/manager/queuehandler.h src/domain/manager/queuehandler.cpp
-)
+if(COMMAND qt_policy)
+    qt_policy(SET QTP0001 NEW)
+    qt_policy(SET QTP0004 NEW)
+endif()
 
-target_link_libraries(webcrawler_lib
-    PRIVATE Qt6::Core Qt6::Network
-)
+add_subdirectory(src)
 
-qt_add_executable(appWebCrawlerApp
-    src/main.cpp
-)
-
-target_link_libraries(appWebCrawlerApp
-    PRIVATE webcrawler_lib Qt6::Quick
-)
-
-qt_add_qml_module(appWebCrawlerApp
-    URI WebCrawlerApp
-    VERSION 1.0
-    QML_FILES
-        src/qml/Main.qml
-        src/qml/components/HeaderBar.qml
-        src/qml/components/ControlPanel.qml
-        src/qml/components/UrlTableView.qml
-        src/qml/components/ConsolPanel.qml
-        src/qml/components/InfoPanel.qml
-)
-
-# Define QT_NO_DEBUG_OUTPUT for Release builds
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DQT_NO_DEBUG_OUTPUT")
-
-include(GNUInstallDirs)
-install(TARGETS appWebCrawlerApp
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-
-# add_subdirectory(tests)
+option(BUILD_TESTING "Build unit tests" ON)
+if(BUILD_TESTING)
+    find_package(GTest QUIET)
+    if(GTest_FOUND)
+        enable_testing()
+        add_subdirectory(tests)
+    endif()
+endif()

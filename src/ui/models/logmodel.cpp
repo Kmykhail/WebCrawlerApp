@@ -27,7 +27,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
     const auto &item = m_logData.at(index.row());
     switch (role) {
-        case TimeRole: return item.m_time;
+        case TimeRole: return item.m_time.toString("hh:mm:ss");
         case TypeRole: return item.type;
         case MessageRole: return item.message;
     }
