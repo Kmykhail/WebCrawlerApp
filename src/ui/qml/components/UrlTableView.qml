@@ -56,15 +56,15 @@ Item {
             clip: true
             boundsBehavior: Flickable.StopAtBounds
 
-            columnWidthProvider: function(column) { // TODO fix width
+            columnWidthProvider: function(column) {
                 switch(column) {
-                    case UrlModel.NumberColumn: return tableView.width * 0.08;
-                    case UrlModel.TimeColumn: return tableView.width * 0.08;
+                    case UrlModel.NumberColumn: return tableView.width * 0.06;
+                    case UrlModel.TimeColumn: return tableView.width * 0.10;
                     case UrlModel.StatusColumn: return tableView.width * 0.08;
-                    case UrlModel.DepthColumn: return tableView.width * 0.08;
-                    case UrlModel.UrlColumn: return tableView.width * 0.42;
-                    case UrlModel.SizeColumn: return tableView.width * 0.15;
-                    case UrlModel.FetchedColumn: return tableView.width * 0.05;
+                    case UrlModel.DepthColumn: return tableView.width * 0.06;
+                    case UrlModel.UrlColumn: return tableView.width * 0.48;
+                    case UrlModel.SizeColumn: return tableView.width * 0.12;
+                    case UrlModel.FetchedColumn: return tableView.width * 0.10;
                     default: return 100;
                 }
             }
