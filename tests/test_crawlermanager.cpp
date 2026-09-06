@@ -2,6 +2,7 @@
 #include <QCoreApplication>
 
 #include "crawlermanager.h"
+#include "CrawlItem.h"
 
 class CrawlerManagerTest : public ::testing::Test {
 protected:
@@ -25,8 +26,26 @@ TEST_F(CrawlerManagerTest, SetUrlDepth) {
     EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::IDLE);
 }
 
-int main(int argc, char **argv) {
-    QCoreApplication app(argc, argv);
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST_F(CrawlerManagerTest, StartAndStop) {
+    crawlerManager->start("http://example.com");
+    EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::RUN);
+
+    crawlerManager->pause();
+    EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::PAUSE);
+
+    crawlerManager->resume();
+    EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::RUN);
+
+    crawlerManager->stop();
+    EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::STOP);
+}
+
+TEST_F(CrawlerManagerTest, LinkScrapingEnqueuesItems) {
+    QSet<CrawlItem> items = {
+        {QUrl("http://example.com/scraped1"), 1},
+        {QUrl("http://example.com/scraped2"), 1}
+    };
+
+    crawlerManager->onLinkScraping(items);
+    SUCCEED();
 }
