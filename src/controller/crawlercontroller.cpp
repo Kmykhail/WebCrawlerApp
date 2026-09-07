@@ -7,12 +7,21 @@ CrawlerController::CrawlerController(QObject *parent)
 {
     m_state.controlState = static_cast<int>(m_manager->getControlState());
 
+    connect(m_manager, &CrawlerManager::clearUrls,
+            this, [this]() {
+        m_model->onClear();
+
+        m_state.reset();
+        emit stateChanged();
+    });
+
     connect(m_manager, &CrawlerManager::urlsDiscovered,
             this, [this](const QList<UrlData> &batch) {
         m_state.discovered += batch.size();
         m_model->onUrlsDiscovered(batch);
         emit stateChanged();
     });
+
     connect(m_manager, &CrawlerManager::controlStateChanged,
             this, [this](){
         m_state.controlState = static_cast<int>(m_manager->getControlState());

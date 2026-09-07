@@ -37,6 +37,7 @@ public:
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void stop();
+    Q_INVOKABLE void clear();
     Q_INVOKABLE void setUrlDepth(qint32 depth);
     Q_INVOKABLE void setUrlLimit(qint32 limit);
 
@@ -53,6 +54,7 @@ signals:
     void finished();
     void urlLimitChanged();
     void urlDepthChanged();
+    void clearUrls();
 
 private:
     void processQueue();

@@ -70,7 +70,6 @@ CrawlerManager::CrawlerManager(QObject *parent)
         qDebug() << "Crawling process completed";
 
         stop();
-        clearThreadPool();
     });
 }
 
@@ -79,14 +78,19 @@ CrawlerManager::~CrawlerManager()
     qDebug() << Q_FUNC_INFO;
     if (m_controlState != STOP) {
         stop();
+        clear();
     }
-    clearThreadPool();
 }
 
 void CrawlerManager::start(const QString &url)
 {
     qDebug() << Q_FUNC_INFO;
     if (url.isEmpty() || m_controlState == RUN) return;
+
+    if (m_controlState == STOP || m_controlState == IDLE) {
+        clear();
+        emit clearUrls();
+    }
 
     m_controlState = RUN;
     m_queueHandler->enqueue({ CrawlItem{QUrl{url}, 0} });
@@ -116,11 +120,22 @@ void CrawlerManager::stop()
     qDebug() << Q_FUNC_INFO;
     m_controlState = STOP;
 
-    m_queueHandler->clearAll();
     m_urlFetcher->abortNetworkReplies();
-    m_pendingBatch.clear();
-
     emit controlStateChanged(m_controlState);
+}
+
+void CrawlerManager::clear()
+{
+    qDebug() << Q_FUNC_INFO;
+    if (m_controlState == STOP) {
+        m_queueHandler->clearAll();
+        m_pendingBatch.clear();
+        emit clearUrls();
+
+        m_controlState = IDLE;
+        emit controlStateChanged(m_controlState);
+        clearThreadPool();
+    }
 }
 
 void CrawlerManager::setUrlDepth(qint32 depth)

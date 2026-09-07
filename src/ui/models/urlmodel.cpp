@@ -97,6 +97,14 @@ void UrlModel::onUrlsFetched(const QList<UrlData> &fetchBatch)
     }
 }
 
+void UrlModel::onClear()
+{
+    beginResetModel();
+    m_urlData.clear();
+    m_urlHashIndex.clear();
+    endResetModel();
+}
+
 qint32 UrlModel::findRowByKey(const QString &key) const
 {
     return m_urlHashIndex.value(qHash(key), -1);

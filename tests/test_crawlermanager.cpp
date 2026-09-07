@@ -38,6 +38,9 @@ TEST_F(CrawlerManagerTest, StartAndStop) {
 
     crawlerManager->stop();
     EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::STOP);
+
+    crawlerManager->clear();
+    EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::IDLE);
 }
 
 TEST_F(CrawlerManagerTest, LinkScrapingEnqueuesItems) {

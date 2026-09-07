@@ -7,6 +7,7 @@ Item {
     id: controlPanel
     implicitHeight: 100
     property CrawlerController controller: null
+    readonly property int controlState: controller ? controller.state.controlState : CrawlerController.IDLE;
 
     Rectangle {
         anchors.fill: parent
@@ -15,7 +16,7 @@ Item {
         color: "#f5f5f5"
         GridLayout {
             anchors.centerIn: parent
-            columns: 6
+            columns: 7
             rowSpacing: 4
             columnSpacing: 15
 
@@ -31,6 +32,7 @@ Item {
                 color: "grey"
             }
 
+            Item { Layout.fillWidth: true }
             Item { Layout.fillWidth: true }
             Item { Layout.fillWidth: true }
             Item { Layout.fillWidth: true }
@@ -94,6 +96,7 @@ Item {
                 id: startButton
                 text: "START"
                 font.weight: Font.Medium
+                enabled: controlState === CrawlerController.IDLE || controlState == CrawlerController.STOP
                 contentItem: Text {
                     text: startButton.text
                     font: startButton.font
@@ -107,14 +110,10 @@ Item {
                     border.width: 1
                 }
 
+
                 onClicked: {
                     if (controller && controller.manager) {
                         controller.manager.start(textField.text);
-
-                        startButton.enabled = false;
-                        pauseButton.enabled = true;
-                        resumeButton.enabled = false;
-                        stopButton.enabled = true;
                     }
                 }
             }
@@ -122,8 +121,8 @@ Item {
             Button {
                 id: pauseButton
                 text: "PAUSE"
-                enabled: false
                 font.weight: Font.Medium
+                enabled: controlState === CrawlerController.RUN
                 contentItem: Text {
                     text: pauseButton.text
                     font: pauseButton.font
@@ -140,21 +139,15 @@ Item {
                 onClicked: {
                     if (controller && controller.manager) {
                         controller.manager.pause();
-
-                        startButton.enabled = false;
-                        pauseButton.enabled = false;
-                        resumeButton.enabled = true;
-                        stopButton.enabled = true;
                     }
                 }
             }
 
-
             Button {
                 id: resumeButton
                 text: "RESUME"
-                enabled: false
                 font.weight: Font.Medium
+                enabled: controlState === CrawlerController.PAUSE
                 contentItem: Text {
                     text: resumeButton.text
                     font: resumeButton.font
@@ -164,17 +157,12 @@ Item {
                 background: Rectangle {
                     anchors.fill: parent
                     color: "#f5f5f5"
-                    border.color: pauseButton.enabled ? "green" : "grey"
+                    border.color: resumeButton.enabled ? "green" : "grey"
                     border.width: 1
                 }
                 onClicked: {
                     if (controller && controller.manager) {
                         controller.manager.resume();
-
-                        startButton.enabled = false;
-                        pauseButton.enabled = true;
-                        resumeButton.enabled = false;
-                        stopButton.enabled = true;
                     }
                 }
             }
@@ -182,8 +170,8 @@ Item {
             Button {
                 id: stopButton
                 text: "STOP"
-                enabled: false
                 font.weight: Font.Medium
+                enabled: controlState === CrawlerController.RUN  || controlState === CrawlerController.PAUSE
                 contentItem: Text {
                     text: stopButton.text
                     font: stopButton.font
@@ -200,11 +188,31 @@ Item {
                 onClicked: {
                     if (controller && controller.manager) {
                         controller.manager.stop();
+                    }
+                }
+            }
 
-                        startButton.enabled = true;
-                        pauseButton.enabled = false;
-                        resumeButton.enabled = false;
-                        stopButton.enabled = false;
+            Button {
+                id: clearButton
+                text: "CLEAR"
+                font.weight: Font.Medium
+                enabled: controlState === CrawlerController.STOP
+                contentItem: Text {
+                    text: clearButton.text
+                    font: clearButton.font
+                    color: clearButton.enabled ? "#595959" : "grey"
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: clearButton.enabled ? "#595959" : "grey"
+                    border.width: 1
+                }
+
+                onClicked: {
+                    if (controller && controller.manager) {
+                        controller.manager.clear();
                     }
                 }
             }

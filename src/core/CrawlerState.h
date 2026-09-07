@@ -12,6 +12,17 @@ struct CrawlerState {
     Q_PROPERTY(qint32 queued MEMBER queued)
     Q_PROPERTY(qint32 fetched MEMBER fetched)
     Q_PROPERTY(qint32 failed MEMBER failed)
+
+public:
+    void reset() {
+        running = false;
+        controlState = 0;
+        discovered = 0;
+        queued = 0;
+        fetched = 0;
+        failed = 0;
+    }
+
 public:
     bool running{false};
     int controlState{4}; // 4 = IDLE

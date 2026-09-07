@@ -1,5 +1,7 @@
 #include "queuehandler.h"
 
+#include <QDebug>
+
 namespace {
 constexpr qint32 DEFAULT_LIMIT = 10000;
 constexpr qint32 DEFAULT_DEPTH = 3;
@@ -86,6 +88,8 @@ qint32 QueueHandler::getUrlLimit() const
 
 void QueueHandler::setUrlLimit(qint32 urlLimit)
 {
+    qDebug() << Q_FUNC_INFO;
+
     if (m_urlLimit != urlLimit) {
         m_urlLimit = urlLimit;
         emit urlLimitChanged();
@@ -99,6 +103,8 @@ qint32 QueueHandler::getUrlDepth() const
 
 void QueueHandler::setUrlDepth(qint32 urlDepth)
 {
+    qDebug() << Q_FUNC_INFO;
+
     if (m_depth != urlDepth) {
         m_depth = urlDepth;
         emit urlDepthChanged();

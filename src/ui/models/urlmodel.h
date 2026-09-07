@@ -51,6 +51,7 @@ public:
 public slots:
     void onUrlsDiscovered(const QList<UrlData> &rawBatch);
     void onUrlsFetched(const QList<UrlData> &fetchBatch);
+    void onClear();
 
 private:
     qint32 findRowByKey(const QString &key) const;
