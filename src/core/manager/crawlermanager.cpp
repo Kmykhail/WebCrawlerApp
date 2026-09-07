@@ -146,10 +146,16 @@ void CrawlerManager::setUrlDepth(qint32 depth)
     }
 }
 
-void CrawlerManager::setUrlLimit(qint32 limit)
+void CrawlerManager::setUrlLimit(const QString &limitStr)
 {
     qDebug() << Q_FUNC_INFO;
     if (m_controlState != RUN) {
+        qint32 limit{0};
+        if (limitStr.compare("Unlimited", Qt::CaseInsensitive) == 0) {
+            limit = std::numeric_limits<quint32>::max();
+        } else {
+            limit = limitStr.toUInt();
+        }
         m_queueHandler->setUrlLimit(limit);
     }
 }

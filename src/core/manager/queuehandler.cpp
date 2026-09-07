@@ -86,7 +86,7 @@ qint32 QueueHandler::getUrlLimit() const
     return m_urlLimit;
 }
 
-void QueueHandler::setUrlLimit(qint32 urlLimit)
+void QueueHandler::setUrlLimit(quint32 urlLimit)
 {
     qDebug() << Q_FUNC_INFO;
 

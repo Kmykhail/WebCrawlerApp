@@ -16,7 +16,7 @@ Item {
         color: "#f5f5f5"
         GridLayout {
             anchors.centerIn: parent
-            columns: 7
+            columns: 8
             rowSpacing: 4
             columnSpacing: 15
 
@@ -29,6 +29,12 @@ Item {
             Label {
                 id: depthLabel
                 text: qsTr("DEPTH")
+                color: "grey"
+            }
+
+            Label {
+                id: limitLabel
+                text: qsTr("PAGE LIMIT")
                 color: "grey"
             }
 
@@ -90,6 +96,65 @@ Item {
                         controller.manager.setUrlDepth(depthSpinBox.value);
                     }
                 }
+            }
+
+            ComboBox {
+                id: limitComboBox
+
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 25
+
+                model: [
+                    "100",
+                    "500",
+                    "1000",
+                    "5000",
+                    "10000",
+                    "50000",
+                    "100000",
+                    "Unlimited"
+                ]
+                currentIndex: 0
+
+                function updateUrlLimit() {
+                    if (controller && controller.manager) {
+                        controller.manager.setUrlLimit(currentText);
+                    }
+                }
+
+                contentItem: Text {
+                    leftPadding: 10
+                    rightPadding:  limitComboBox.indicator.width + limitComboBox.spacing
+                    text: limitComboBox.displayText
+                    font: limitComboBox.font
+                    color: "black"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    anchors.fill: parent
+                    color: "#f5f5f5"
+                    border.color: "grey"
+                    border.width: 1
+                }
+
+                onActivated: updateUrlLimit()
+                delegate: ItemDelegate {
+                    width: limitComboBox.width
+                    contentItem: Text {
+                        anchors.centerIn: parent
+                        text: modelData
+                        color: "black"
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: highlighted ? "#e0e0e0" : "white"
+                    }
+                }
+
+                Component.onCompleted: updateUrlLimit()
             }
 
             Button {

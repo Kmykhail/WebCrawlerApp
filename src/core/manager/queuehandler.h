@@ -31,7 +31,7 @@ public:
     bool isUnderLimit() const;
 
     qint32 getUrlLimit() const;
-    void setUrlLimit(qint32 urlLimit);
+    void setUrlLimit(quint32 urlLimit);
 
     qint32 getUrlDepth() const;
     void setUrlDepth(qint32 urlDepth);

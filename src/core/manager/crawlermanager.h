@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE void stop();
     Q_INVOKABLE void clear();
     Q_INVOKABLE void setUrlDepth(qint32 depth);
-    Q_INVOKABLE void setUrlLimit(qint32 limit);
+    Q_INVOKABLE void setUrlLimit(const QString &limitStr);
 
     ControlState getControlState() const;
 
