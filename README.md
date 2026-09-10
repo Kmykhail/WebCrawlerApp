@@ -1,17 +1,38 @@
 # Web Crawler Application
 
-A high-performance, multithreaded web crawler built with C++ and Qt 6 (QML for the user interface). It features asynchronous network requests, depth and limit controls, real-time logging, live statistics, and a modern graphical user interface.
+A desktop web crawler built with C++, Qt 6, and QML.
+
+The application allows users to specify a target URL, configure crawl depth and page limits, and monitor discovered URLs and crawling statistics in real time through a graphical user interface.
 
 ---
 
 ## Features
 
-- **Asynchronous & Multithreaded**: Utilizes `QThreadPool`, `QNetworkAccessManager`, and custom `QRunnable` workers for concurrent crawling without blocking the UI.
-- **Depth & Page Limiting**: Configure maximum crawl depth and total page limits (including an "Unlimited" option).
-- **Real-time Statistics**: Live tracking of discovered, queued, fetched, and failed URLs, alongside elapsed time and current operational state.
-- **Interactive UI**: Built with Qt Quick / QML, featuring a sortable/filterable URL table view, collapsible console panel with colored log levels, and control panels.
-- **Copy to Clipboard**: Easily copy discovered URLs directly from the table view.
-- **Robust Error Handling**: Handles network timeouts, HTTP status errors, and gracefully aborts requests on stop.
+- **Asynchronous & Multithreaded**
+   Uses `QNetworkAccessManager` for non-blocking HTTP requests.
+
+- **Multithreaded Processing**
+   Uses `QThreadPool` and `QRunnable` workers for concurrent HTML/link processing without blocking the UI.
+
+- **Depth & Page Limiting**
+   Configure maximum crawl depth and total page limits (including an "Unlimited" option).
+   
+- **Real-time Statistics**
+   Live tracking of discovered, queued, fetched, and failed URLs, alongside elapsed time and current operational state.
+   
+- **Interactive UI**
+   Built with Qt Quick / QML and includes:
+   - URL results table
+   - Crawler controls
+   - Statistics
+   - Collapsible console panel
+   - Colored log levels
+
+- **Copy to Clipboard**
+   Easily copy discovered URLs directly from the table view.
+   
+- **Robust Error Handling**
+   Handles network timeouts, HTTP status errors, and gracefully aborts requests on stop.
 
 ---
 
@@ -60,7 +81,46 @@ The project follows a clean separation of concerns:
    cd web-crawler
    ```
 
-2. Ensure Qt 6 is installed and configured in your environment path (or set `CMAKE_PREFIX_PATH`).
+2. Install Qt 6:
+   Make sure Qt 6 is installed on your system.
+   
+   If Qt is not available in your system environment, you can specify its installation path using CMAKE_PREFIX_PATH.
+   
+   For example, if Qt 6.9.1 is installed at:
+   
+   `~/Qt/6.9.1/gcc_64`
+
+   you can use this path when configuring the project.
 
 ---
 
+## Build
+Create a build directory and configure the project with CMake:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/path/to/Qt
+
+```
+
+Then build the project:
+
+`cmake --build build`
+
+---
+
+## Run
+
+./build/src/WebCrawler
+
+---
+
+## Usage
+
+1. Start the application.
+2. Enter the target URL.
+3. Select the maximum crawl depth.
+4. Select the maximum number of URLs to crawl.
+5. Start the crawler.
+6. Observe discovered URLs in real time.
+
+---
