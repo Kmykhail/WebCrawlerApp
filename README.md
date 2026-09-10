@@ -83,8 +83,8 @@ The project follows a clean separation of concerns:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/web-cr  awler.git
-   cd web-crawler
+   git clone https://github.com/your-username/WebCrawlerApp.git
+   cd WebCrawlerApp
    ```
 
 2. Install Qt 6:
