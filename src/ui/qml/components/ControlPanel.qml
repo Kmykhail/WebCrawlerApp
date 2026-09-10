@@ -49,7 +49,6 @@ Item {
                 id: textField
                 placeholderText: "Target URL"
                 implicitWidth: 300
-                text: "https://news.google.com/home?hl=uk&gl=UA&ceid=UA%3Auk" // TODO: remove it
                 color: "black"
                 background: Rectangle {
                     anchors.fill: parent
