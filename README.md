@@ -116,7 +116,7 @@ Then build the project:
 
 ## Run
 
-./build/src/WebCrawler
+./build/src/WebCrawlerApp
 
 ---
 
