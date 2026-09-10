@@ -9,7 +9,9 @@ Worker::Worker(const CrawlItem &crawlItem, const QByteArray &html, QObject *pare
 }
 void Worker::run() {
     if (m_html.isEmpty()) {
-      qWarning() << "Empty html";
+      qWarning() << QStringLiteral("Empty html for url: %1, depth: %2")
+                          .arg(m_crawlItem.url.toString())
+                          .arg(m_crawlItem.depth);
       return;
     }
 

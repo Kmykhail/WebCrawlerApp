@@ -54,7 +54,7 @@ QHash<int, QByteArray> UrlModel::roleNames() const {
     roles[Qt::DisplayRole] = "display";
     roles[UrlRole] = "url";
     roles[TimeRole] = "time";
-    roles[StatusRole] = "status";
+    roles[StatusRole] = "statusCode";
     roles[DepthRole] = "depth";
     roles[SizeRole] = "htmlSize";
     roles[FetchedRole] = "fetched";

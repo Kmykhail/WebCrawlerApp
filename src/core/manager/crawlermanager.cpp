@@ -120,6 +120,7 @@ void CrawlerManager::stop()
     qDebug() << Q_FUNC_INFO;
     m_controlState = STOP;
 
+    flushPedndingBatch();
     m_urlFetcher->abortNetworkReplies();
     emit controlStateChanged(m_controlState);
 }
@@ -128,6 +129,7 @@ void CrawlerManager::clear()
 {
     qDebug() << Q_FUNC_INFO;
     if (m_controlState == STOP) {
+        flushPedndingBatch();
         m_queueHandler->clearAll();
         m_pendingBatch.clear();
         emit clearUrls();
@@ -177,6 +179,7 @@ void CrawlerManager::processQueue()
     if (!m_queueHandler->isUnderLimit() &&
         !m_urlFetcher->activeDownloads() &&
         m_queueHandler->isQueueEmpty()) {
+        flushPedndingBatch();
         emit finished();
     }
 }
@@ -200,4 +203,13 @@ void CrawlerManager::clearThreadPool()
     qDebug() << Q_FUNC_INFO;
     m_threadPool.clear();
     m_threadPool.waitForDone();
+}
+
+void CrawlerManager::flushPedndingBatch()
+{
+    qDebug() << Q_FUNC_INFO;
+    if (!m_pendingBatch.isEmpty()) {
+        emit fetched(m_pendingBatch);
+        m_pendingBatch.clear();
+    }
 }

@@ -59,6 +59,7 @@ signals:
 private:
     void processQueue();
     void clearThreadPool();
+    void flushPedndingBatch();
 
 private:
     UrlFetcher *m_urlFetcher{nullptr};
