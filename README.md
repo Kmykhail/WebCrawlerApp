@@ -6,6 +6,12 @@ The application allows users to specify a target URL, configure crawl depth and 
 
 ---
 
+## Pictures
+
+<img width="1602" height="1306" alt="Screenshot from 2026-09-10 18-43-42" src="https://github.com/user-attachments/assets/119e161c-48e0-4004-874a-ea73019142ce" />
+
+---
+
 ## Features
 
 - **Asynchronous & Multithreaded**
