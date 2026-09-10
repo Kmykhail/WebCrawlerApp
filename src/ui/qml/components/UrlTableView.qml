@@ -79,24 +79,73 @@ Item {
                 color: row % 2 === 0 ? "#444444" : "#555555"
                 border.color: "#333333"
 
-                Text {
+                Loader {
                     anchors.centerIn: parent
                     width: parent.width - 10
-                    color: "white"
-                    elide: Text.ElideRight
-                    horizontalAlignment: column === 0 || column === 1 ? Text.AlignLeft : Text.AlignHCenter
+                    height: parent.height
 
-                    text: {
-                        if (url === undefined) return ""
-                        switch(column) {
-                            case UrlModel.NumberColumn: return index + 1
-                            case UrlModel.TimeColumn: return Qt.formatTime(time, "hh:mm:ss")
-                            case UrlModel.StatusColumn: return status
-                            case UrlModel.DepthColumn: return depth
-                            case UrlModel.UrlColumn: return url
-                            case UrlModel.SizeColumn: return (htmlSize / 1024).toFixed(1) + " KB"
-                            case UrlModel.FetchedColumn: return fetched ? "YES" : "NO"
-                            default: return ""
+                    sourceComponent: {
+                        return column == UrlModel.UrlColumn ? customRowComponent : defaultTextComponent
+                    }
+                }
+
+                Component {
+                    id: defaultTextComponent
+                    Text {
+                        anchors.centerIn: parent
+                        width: parent.width
+                        color: "white"
+                        elide: Text.ElideRight
+                        horizontalAlignment: column === 0 || column === 1 ? Text.AlignLeft : Text.AlignHCenter
+
+                        text: {
+                            switch(column) {
+                                case UrlModel.NumberColumn: return index + 1
+                                case UrlModel.TimeColumn: return Qt.formatTime(time, "hh:mm:ss")
+                                case UrlModel.StatusColumn: return statusCode
+                                case UrlModel.DepthColumn: return depth
+                                case UrlModel.SizeColumn: return (htmlSize / 1024).toFixed(1) + " KB"
+                                case UrlModel.FetchedColumn: return fetched ? "YES" : "NO"
+                                default: return display
+                            }
+                        }
+                    }
+                }
+
+                Component {
+                    id: customRowComponent
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 2
+
+                        Text {
+                            Layout.fillWidth: true
+                            Layout.leftMargin: 5
+                            color: "white"
+                            elide: Text.ElideRight
+                            text: url
+                        }
+
+                        Button {
+                            id: copyButton
+                            Layout.preferredWidth: 30
+                            Layout.preferredHeight: 30
+
+                            text: "📋"
+                            ToolTip.visible: copyButton.hovered
+                            ToolTip.text: qsTr("Copy URL")
+
+                            TextInput {
+                                id: clipboardBypass
+                                visible: false
+                            }
+
+                            onClicked: {
+                                clipboardBypass.text = url
+                                clipboardBypass.selectAll()
+                                clipboardBypass.copy()
+                            }
                         }
                     }
                 }
