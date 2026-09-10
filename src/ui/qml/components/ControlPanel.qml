@@ -265,13 +265,13 @@ Item {
                 contentItem: Text {
                     text: clearButton.text
                     font: clearButton.font
-                    color: clearButton.enabled ? "#595959" : "grey"
+                    color: clearButton.enabled ? "black" : "grey"
                 }
 
                 background: Rectangle {
                     anchors.fill: parent
                     color: "#f5f5f5"
-                    border.color: clearButton.enabled ? "#595959" : "grey"
+                    border.color: clearButton.enabled ? "black" : "grey"
                     border.width: 1
                 }
 
