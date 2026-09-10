@@ -10,8 +10,11 @@ Item {
     property int elapsedTime: 0
 
     readonly property int controlState: controller ? controller.state.controlState : CrawlerController.IDLE;
-
-
+    onControlStateChanged: {
+        if (controlState === CrawlerController.RUN) {
+            elapsedTime = 0;
+        }
+    }
 
     Timer {
         id: elapsedTimer
@@ -19,9 +22,6 @@ Item {
         interval: 1000
         running: controller && controller.state.running
         onTriggered: elapsedTime++
-        onRunningChanged: {
-            // TODO: add reset
-        }
     }
 
     RowLayout {
