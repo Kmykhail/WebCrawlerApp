@@ -162,6 +162,11 @@ void CrawlerManager::setUrlLimit(const QString &limitStr)
     }
 }
 
+quint32 CrawlerManager::getUrlLimit() const
+{
+    return m_queueHandler->getUrlLimit();
+}
+
 void CrawlerManager::processQueue()
 {
     qDebug() << Q_FUNC_INFO;

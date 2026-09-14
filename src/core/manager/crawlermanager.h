@@ -42,6 +42,7 @@ public:
     Q_INVOKABLE void setUrlLimit(const QString &limitStr);
 
     ControlState getControlState() const;
+    quint32 getUrlLimit() const;
 
 public slots:
     void onLinkScraping(const QSet<CrawlItem> &crawledItems);

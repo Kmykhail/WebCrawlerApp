@@ -30,7 +30,7 @@ public:
 
     bool isUnderLimit() const;
 
-    qint32 getUrlLimit() const;
+    quint32 getUrlLimit() const;
     void setUrlLimit(quint32 urlLimit);
 
     qint32 getUrlDepth() const;

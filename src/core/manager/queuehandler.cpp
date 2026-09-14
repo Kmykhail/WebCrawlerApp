@@ -81,7 +81,7 @@ bool QueueHandler::isUnderLimit() const
     return m_visitedUrls.size() < m_urlLimit;
 }
 
-qint32 QueueHandler::getUrlLimit() const
+quint32 QueueHandler::getUrlLimit() const
 {
     return m_urlLimit;
 }

@@ -19,6 +19,7 @@ class CrawlerController : public QObject
     Q_PROPERTY(UrlModel* model READ model CONSTANT)
     Q_PROPERTY(LogModel* logModel READ logModel CONSTANT)
     Q_PROPERTY(CrawlerState state READ state NOTIFY stateChanged)
+    Q_PROPERTY(double progress READ progress NOTIFY progressChanged)
 
 public:
     enum class ControlState {
@@ -36,14 +37,21 @@ public:
     UrlModel *model() const;
     LogModel *logModel() const;
     CrawlerState state() const;
+    double progress() const;
 
 signals:
     void stateChanged();
+    void progressChanged();
+
+private:
+    void updateProgress();
 
 private:
     CrawlerManager *m_manager{nullptr};
     UrlModel *m_model{nullptr};
     CrawlerState m_state;
+
+    double m_progress{0.0};
 };
 
 #endif // CRAWLERCONTROLLER_H
