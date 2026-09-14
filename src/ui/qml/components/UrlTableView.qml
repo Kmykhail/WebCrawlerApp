@@ -7,11 +7,11 @@ Item {
     id: root
     clip: true
 
-    property CrawlerController controller: null
+    property CrawlerViewModel crawlerViewModel: null
 
-    onControllerChanged: {
-        if (controller) {
-            tableView.model = controller.model
+    onCrawlerViewModelChanged: {
+        if (crawlerViewModel) {
+            tableView.model = crawlerViewModel.model
         }
     }
 

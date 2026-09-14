@@ -6,8 +6,8 @@ import WebCrawlerApp 1.0
 Item {
     id: infoPanel
     implicitHeight: mainColumn.implicitHeight
-    property CrawlerController controller: null
-    readonly property int controlState: controller ? controller.state.controlState : CrawlerController.IDLE
+    property CrawlerViewModel crawlerViewModel: null
+    readonly property int controlState: crawlerViewModel ? crawlerViewModel.state.controlState : CrawlerViewModel.IDLE
 
     ColumnLayout {
         id: mainColumn
@@ -20,7 +20,7 @@ Item {
             Layout.preferredHeight: 8
             from: 0
             to: 100
-            value: controller ? controller.progress : 0
+            value: crawlerViewModel ? crawlerViewModel.progress : 0
             background: Rectangle{
                 anchors.fill: parent
                 color: "#e0e0e0"
@@ -35,10 +35,10 @@ Item {
                     height: parent.height
                     color: {
                         switch (controlState) {
-                            case CrawlerController.RUN: return "green"
-                            case CrawlerController.PAUSE: return "orange"
-                            case CrawlerController.STOP: return controller.progress === 100.0 ? "green" : "red"
-                            case CrawlerController.IDLE: return "#e0e0e0"
+                            case CrawlerViewModel.RUN: return "green"
+                            case CrawlerViewModel.PAUSE: return "orange"
+                            case CrawlerViewModel.STOP: return crawlerViewModel.progress === 100.0 ? "green" : "red"
+                            case CrawlerViewModel.IDLE: return "#e0e0e0"
                             default: return "#e0e0e0"
 
                         }
@@ -74,14 +74,14 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: {
-                            if (!controller)
+                            if (!crawlerViewModel)
                                 return "0"
 
                             switch (index) {
-                                case 0: return controller.state.discovered
-                                case 1: return controller.state.queued
-                                case 2: return controller.state.fetched
-                                case 3: return controller.state.failed
+                                case 0: return crawlerViewModel.state.discovered
+                                case 1: return crawlerViewModel.state.queued
+                                case 2: return crawlerViewModel.state.fetched
+                                case 3: return crawlerViewModel.state.failed
                                 default: return "0"
                             }
                         }

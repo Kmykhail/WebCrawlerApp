@@ -3,6 +3,7 @@ add_executable(tests
     test_queuehandler.cpp
     test_urlfetcher.cpp
     test_worker.cpp
+    test_crawlerviewmodel.cpp
 )
 
 target_include_directories(tests
@@ -11,6 +12,10 @@ target_include_directories(tests
         ${CMAKE_SOURCE_DIR}/src/core
         ${CMAKE_SOURCE_DIR}/src/core/manager
         ${CMAKE_SOURCE_DIR}/src/core/worker
+        ${CMAKE_SOURCE_DIR}/src/ui
+        ${CMAKE_SOURCE_DIR}/src/ui/viewmodel
+        ${CMAKE_SOURCE_DIR}/src/ui/models
+        ${CMAKE_SOURCE_DIR}/src/ui/logger
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network Test)
@@ -18,9 +23,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core Network Test)
 target_link_libraries(tests
     PRIVATE
         project_core
+        ui_module
         Qt6::Core
         Qt6::Network
         Qt6::Test
+        Qt6::Qml
         GTest::gtest_main
 )
 

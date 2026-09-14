@@ -19,11 +19,20 @@ protected:
 
 TEST_F(CrawlerManagerTest, InitialState) {
     EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::IDLE);
+    EXPECT_EQ(crawlerManager->getUrlLimit(), 10000);
 }
 
 TEST_F(CrawlerManagerTest, SetUrlDepth) {
     crawlerManager->setUrlDepth(3);
     EXPECT_EQ(crawlerManager->getControlState(), CrawlerManager::ControlState::IDLE);
+}
+
+TEST_F(CrawlerManagerTest, SetUrlLimit) {
+    crawlerManager->setUrlLimit("100");
+    EXPECT_EQ(crawlerManager->getUrlLimit(), 100);
+
+    crawlerManager->setUrlLimit("invalid");
+    EXPECT_EQ(crawlerManager->getUrlLimit(), 0);
 }
 
 TEST_F(CrawlerManagerTest, StartAndStop) {

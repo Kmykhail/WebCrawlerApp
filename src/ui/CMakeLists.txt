@@ -4,8 +4,8 @@ qt_add_qml_module(ui_module
     RESOURCE_PREFIX "/qt/qml"
     OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/WebCrawlerApp"
     SOURCES
-        ${CMAKE_SOURCE_DIR}/src/controller/crawlercontroller.h
-        ${CMAKE_SOURCE_DIR}/src/controller/crawlercontroller.cpp
+        viewmodel/crawlerviewmodel.h
+        viewmodel/crawlerviewmodel.cpp
         logger/logcontroller.h
         logger/logcontroller.cpp
         models/logmodel.h
@@ -33,6 +33,7 @@ target_include_directories(ui_module
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/models
+        ${CMAKE_CURRENT_SOURCE_DIR}/viewmodel
         ${CMAKE_CURRENT_SOURCE_DIR}/logger
         ${CMAKE_SOURCE_DIR}/src/controller
 )

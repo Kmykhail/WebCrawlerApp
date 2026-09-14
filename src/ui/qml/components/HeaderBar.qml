@@ -6,12 +6,12 @@ import WebCrawlerApp 1.0
 Item {
     id: headerBar
     implicitHeight: 30
-    property CrawlerController controller: null
+    property CrawlerViewModel crawlerViewModel: null
     property int elapsedTime: 0
 
-    readonly property int controlState: controller ? controller.state.controlState : CrawlerController.IDLE;
+    readonly property int controlState: crawlerViewModel ? crawlerViewModel.state.controlState : CrawlerViewModel.IDLE;
     onControlStateChanged: {
-        if (controlState === CrawlerController.RUN) {
+        if (controlState === CrawlerViewModel.RUN) {
             elapsedTime = 0;
         }
     }
@@ -20,7 +20,7 @@ Item {
         id: elapsedTimer
         repeat: true
         interval: 1000
-        running: controller && controller.state.running
+        running: crawlerViewModel && crawlerViewModel.state.running
         onTriggered: elapsedTime++
     }
 
@@ -73,16 +73,16 @@ Item {
                 height: 6
                 radius: width / 2
 
-                color: controlState === CrawlerController.RUN ? "green" :
-                       controlState === CrawlerController.PAUSE ? "orange" :
-                       controlState === CrawlerController.STOP ? "red" : "grey"
+                color: controlState === CrawlerViewModel.RUN ? "green" :
+                       controlState === CrawlerViewModel.PAUSE ? "orange" :
+                       controlState === CrawlerViewModel.STOP ? "red" : "grey"
 
-                opacity: controlState === CrawlerController.RUN ? animOpacity : 1.0
+                opacity: controlState === CrawlerViewModel.RUN ? animOpacity : 1.0
                 property real animOpacity: 1.0
 
                 SequentialAnimation on opacity {
                     loops: Animation.Infinite
-                    running: controlState === CrawlerController.RUN
+                    running: controlState === CrawlerViewModel.RUN
                     onRunningChanged: if (!running) statusIndicator.animOpacity = 1.0
 
                     PropertyAnimation {
@@ -104,13 +104,13 @@ Item {
             }
 
             Label {
-                text: controlState === CrawlerController.RUN ? "CRAWLING" :
-                      controlState === CrawlerController.PAUSE ? "PAUSED"   :
-                      controlState === CrawlerController.STOP ? "STOPPED" : "IDLE"
+                text: controlState === CrawlerViewModel.RUN ? "CRAWLING" :
+                      controlState === CrawlerViewModel.PAUSE ? "PAUSED"   :
+                      controlState === CrawlerViewModel.STOP ? "STOPPED" : "IDLE"
 
-                color: controlState === CrawlerController.RUN ? "green"  :
-                       controlState === CrawlerController.PAUSE ? "orange" :
-                       controlState === CrawlerController.STOP ? "red" : "grey"
+                color: controlState === CrawlerViewModel.RUN ? "green"  :
+                       controlState === CrawlerViewModel.PAUSE ? "orange" :
+                       controlState === CrawlerViewModel.STOP ? "red" : "grey"
 
                 Layout.preferredWidth: 80
             }

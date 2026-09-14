@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef CRAWLERCONTROLLER_H
-#define CRAWLERCONTROLLER_H
+#ifndef CRAWLERVIEWMODEL_H
+#define CRAWLERVIEWMODEL_H
 
 #include <QObject>
 #include <QtQml/qqmlregistration.h>
@@ -11,7 +11,7 @@
 #include "crawlermanager.h"
 #include "CrawlerState.h"
 
-class CrawlerController : public QObject
+class CrawlerViewModel : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
@@ -31,7 +31,7 @@ public:
     };
     Q_ENUM(ControlState)
 
-    explicit CrawlerController(QObject *parent = nullptr);
+    explicit CrawlerViewModel(QObject *parent = nullptr);
 
     CrawlerManager *manager() const;
     UrlModel *model() const;
@@ -54,4 +54,4 @@ private:
     double m_progress{0.0};
 };
 
-#endif // CRAWLERCONTROLLER_H
+#endif // CRAWLERVIEWMODEL_H

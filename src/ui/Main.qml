@@ -13,8 +13,8 @@ ApplicationWindow {
         color: "white"
     }
 
-    CrawlerController {
-        id: controller
+    CrawlerViewModel {
+        id: viewModel
     }
 
     ColumnLayout {
@@ -22,30 +22,30 @@ ApplicationWindow {
 
         HeaderBar {
             Layout.fillWidth: true
-            controller: controller
+            crawlerViewModel: viewModel
         }
 
         ControlPanel {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
-            controller: controller
+            crawlerViewModel: viewModel
         }
 
         InfoPanel {
             Layout.fillWidth: true
-            controller: controller
+            crawlerViewModel: viewModel
         }
 
         UrlTableView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            controller: controller
+            crawlerViewModel: viewModel
         }
 
         ConsolPanel {
             Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
-            logModel: controller.logModel
+            logModel: viewModel.logModel
         }
     }
 }

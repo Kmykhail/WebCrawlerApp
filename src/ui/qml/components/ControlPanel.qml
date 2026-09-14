@@ -6,8 +6,8 @@ import WebCrawlerApp 1.0
 Item {
     id: controlPanel
     implicitHeight: 100
-    property CrawlerController controller: null
-    readonly property int controlState: controller ? controller.state.controlState : CrawlerController.IDLE;
+    property CrawlerViewModel crawlerViewModel: null
+    readonly property int controlState: crawlerViewModel ? crawlerViewModel.state.controlState : CrawlerViewModel.IDLE;
 
     Rectangle {
         anchors.fill: parent
@@ -85,14 +85,14 @@ Item {
                     border.width: 1
                 }
                 onValueChanged: {
-                    if (controller && controller.manager) {
-                        controller.manager.setUrlDepth(depthSpinBox.value);
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.setUrlDepth(depthSpinBox.value);
                     }
                 }
 
                 Component.onCompleted: {
-                    if (controller && controller.manager) {
-                        controller.manager.setUrlDepth(depthSpinBox.value);
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.setUrlDepth(depthSpinBox.value);
                     }
                 }
             }
@@ -116,8 +116,8 @@ Item {
                 currentIndex: 0
 
                 function updateUrlLimit() {
-                    if (controller && controller.manager) {
-                        controller.manager.setUrlLimit(currentText);
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.setUrlLimit(currentText);
                     }
                 }
 
@@ -160,7 +160,7 @@ Item {
                 id: startButton
                 text: "START"
                 font.weight: Font.Medium
-                enabled: controlState === CrawlerController.IDLE || controlState == CrawlerController.STOP
+                enabled: controlState === CrawlerViewModel.IDLE || controlState == CrawlerViewModel.STOP
                 contentItem: Text {
                     text: startButton.text
                     font: startButton.font
@@ -176,8 +176,8 @@ Item {
 
 
                 onClicked: {
-                    if (controller && controller.manager) {
-                        controller.manager.start(textField.text);
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.start(textField.text);
                     }
                 }
             }
@@ -186,7 +186,7 @@ Item {
                 id: pauseButton
                 text: "PAUSE"
                 font.weight: Font.Medium
-                enabled: controlState === CrawlerController.RUN
+                enabled: controlState === CrawlerViewModel.RUN
                 contentItem: Text {
                     text: pauseButton.text
                     font: pauseButton.font
@@ -201,8 +201,8 @@ Item {
                 }
 
                 onClicked: {
-                    if (controller && controller.manager) {
-                        controller.manager.pause();
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.pause();
                     }
                 }
             }
@@ -211,7 +211,7 @@ Item {
                 id: resumeButton
                 text: "RESUME"
                 font.weight: Font.Medium
-                enabled: controlState === CrawlerController.PAUSE
+                enabled: controlState === CrawlerViewModel.PAUSE
                 contentItem: Text {
                     text: resumeButton.text
                     font: resumeButton.font
@@ -225,8 +225,8 @@ Item {
                     border.width: 1
                 }
                 onClicked: {
-                    if (controller && controller.manager) {
-                        controller.manager.resume();
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.resume();
                     }
                 }
             }
@@ -235,7 +235,7 @@ Item {
                 id: stopButton
                 text: "STOP"
                 font.weight: Font.Medium
-                enabled: controlState === CrawlerController.RUN  || controlState === CrawlerController.PAUSE
+                enabled: controlState === CrawlerViewModel.RUN  || controlState === CrawlerViewModel.PAUSE
                 contentItem: Text {
                     text: stopButton.text
                     font: stopButton.font
@@ -250,8 +250,8 @@ Item {
                 }
 
                 onClicked: {
-                    if (controller && controller.manager) {
-                        controller.manager.stop();
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.stop();
                     }
                 }
             }
@@ -260,7 +260,7 @@ Item {
                 id: clearButton
                 text: "CLEAR"
                 font.weight: Font.Medium
-                enabled: controlState === CrawlerController.STOP
+                enabled: controlState === CrawlerViewModel.STOP
                 contentItem: Text {
                     text: clearButton.text
                     font: clearButton.font
@@ -275,8 +275,8 @@ Item {
                 }
 
                 onClicked: {
-                    if (controller && controller.manager) {
-                        controller.manager.clear();
+                    if (crawlerViewModel && crawlerViewModel.manager) {
+                        crawlerViewModel.manager.clear();
                     }
                 }
             }

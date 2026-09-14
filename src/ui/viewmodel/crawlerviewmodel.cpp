@@ -1,6 +1,6 @@
-#include "crawlercontroller.h"
+#include "crawlerviewmodel.h"
 
-CrawlerController::CrawlerController(QObject *parent)
+CrawlerViewModel::CrawlerViewModel(QObject *parent)
     : QObject{parent}
     , m_manager{new CrawlerManager(this)}
     , m_model{new UrlModel(this)}
@@ -52,30 +52,29 @@ CrawlerController::CrawlerController(QObject *parent)
         m_model->onUrlsFetched(fetchBatch);
         emit stateChanged();
     });
-
 }
 
-CrawlerManager *CrawlerController::manager() const
+CrawlerManager *CrawlerViewModel::manager() const
 {
     return m_manager;
 }
 
-UrlModel *CrawlerController::model() const
+UrlModel *CrawlerViewModel::model() const
 {
     return m_model;
 }
 
-CrawlerState CrawlerController::state() const
+CrawlerState CrawlerViewModel::state() const
 {
     return m_state;
 }
 
-double CrawlerController::progress() const
+double CrawlerViewModel::progress() const
 {
     return m_progress;
 }
 
-void CrawlerController::updateProgress()
+void CrawlerViewModel::updateProgress()
 {
     auto limit = m_manager->getUrlLimit();
     if (!limit || limit >= std::numeric_limits<quint32>::max()) {
@@ -85,14 +84,10 @@ void CrawlerController::updateProgress()
     auto processed = m_state.fetched + m_state.failed;
     double progress = static_cast<double>(processed) / limit * 100.0;
     m_progress = qMin(100.0, progress);
-    qDebug() << QStringLiteral("fetched: %1, failed: %2, PROGRESS: %3")
-                    .arg(m_state.fetched)
-                    .arg(m_state.failed)
-                    .arg(progress);
     emit progressChanged();
 }
 
-LogModel *CrawlerController::logModel() const
+LogModel *CrawlerViewModel::logModel() const
 {
     return &LogModel::instance();
 }
