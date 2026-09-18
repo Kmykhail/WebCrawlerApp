@@ -4,6 +4,7 @@ add_executable(tests
     test_urlfetcher.cpp
     test_worker.cpp
     test_crawlerviewmodel.cpp
+    MockServer/mockhttpserver.h MockServer/mockhttpserver.cpp
 )
 
 target_include_directories(tests
