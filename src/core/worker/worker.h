@@ -5,7 +5,6 @@
 #include <QRunnable>
 #include <QUrl>
 #include <QRegularExpression>
-#include <qtclasshelpermacros.h>
 
 class Worker : public QObject, public QRunnable {
     Q_OBJECT

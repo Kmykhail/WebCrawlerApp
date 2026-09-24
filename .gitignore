@@ -1,5 +1,6 @@
 .aider*
 .qmlls.ini
+thoughts.txt
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles/
