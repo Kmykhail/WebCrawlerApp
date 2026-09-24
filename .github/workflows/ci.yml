@@ -17,6 +17,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          gcc-14 \
+          g++-14 \
           build-essential \
           cmake \
           libgl1-mesa-dev \
@@ -25,7 +27,11 @@ jobs:
           libgtest-dev
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      run: |
+        cmake -S . -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=gcc-14 \
+          -DCMAKE_CXX_COMPILER=g++-14
 
     - name: Build
       run: cmake --build build --parallel $(nproc)
