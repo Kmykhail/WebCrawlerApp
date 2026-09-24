@@ -22,9 +22,17 @@ jobs:
           build-essential \
           cmake \
           libgl1-mesa-dev \
-          qt6-base-dev \
-          qt6-declarative-dev \
           libgtest-dev
+
+      - name: Install Qt 6.9.1
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.9.1'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'linux_gcc_64'
+          modules: 'qtdeclarative'
+          cache: true
 
     - name: Configure CMake
       run: |
