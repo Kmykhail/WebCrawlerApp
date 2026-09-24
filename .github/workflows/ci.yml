@@ -24,6 +24,11 @@ jobs:
           libgl1-mesa-dev \
           libgtest-dev
 
+    - name: Check Qt modules
+      run: |
+        python3 -m pip install aqtinstall
+        aqt list-qt linux desktop --modules 6.9.1 linux_gcc_64
+
     - name: Install Qt 6.9.1
       uses: jurplel/install-qt-action@v4
       with:
@@ -31,7 +36,6 @@ jobs:
         host: 'linux'
         target: 'desktop'
         arch: 'linux_gcc_64'
-        modules: 'qtdeclarative'
         cache: true
 
     - name: Configure CMake
