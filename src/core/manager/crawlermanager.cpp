@@ -20,6 +20,7 @@ CrawlerManager::CrawlerManager(QObject *parent)
     : QObject{parent}
     , m_urlFetcher{new UrlFetcher(this)}
     , m_queueHandler{new QueueHandler(this)}
+    , m_robotsHandler{new RobotsHandler(this)}
 {
     m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
 
@@ -47,7 +48,7 @@ CrawlerManager::CrawlerManager(QObject *parent)
 
         if (m_queueHandler->isUnderLimit()) {
             auto worker = new Worker(fetchResult.crawlItem, fetchResult.html);
-            connect(worker, &Worker::finished, this, &CrawlerManager::onLinkScraping);
+            connect(worker, &Worker::finished, m_robotsHandler, &RobotsHandler::evaluateUrls);
             m_threadPool.start(worker);
         }
 
@@ -55,17 +56,24 @@ CrawlerManager::CrawlerManager(QObject *parent)
             processQueue();
         }
     });
+
     connect(m_queueHandler, &QueueHandler::urlsDiscovered, this, [this](const QList<CrawlItem> &batch) {
         auto urlDataList = batch
                            | std::ranges::views::transform([](const CrawlItem &item){ return UrlData{item}; })
                            | std::ranges::to<QList<UrlData>>();
         emit urlsDiscovered(urlDataList);
     });
+
+    connect(m_robotsHandler, &RobotsHandler::requiredRobotTxt, m_urlFetcher, &UrlFetcher::onRequiredRobotsTxt);
+    connect(m_urlFetcher, &UrlFetcher::robotsTxtCompleted, m_robotsHandler, &RobotsHandler::parseRobotsTxt);
+    connect(m_robotsHandler, &RobotsHandler::filtered, this, &CrawlerManager::onLinkScraping);
+
     connect(this, &CrawlerManager::controlStateChanged, this, [this](ControlState state) {
         if (state == RUN || state == RESUME) {
             processQueue();
         }
     });
+
     connect(this, &CrawlerManager::finished, this, [this]() {
         qDebug() << "Crawling process completed";
 
@@ -93,7 +101,10 @@ void CrawlerManager::start(const QString &url)
     }
 
     m_controlState = RUN;
-    m_queueHandler->enqueue({ CrawlItem{QUrl{url}, 0} });
+
+    const CrawlItem crawlItem{QUrl{url}, 0};
+    m_queueHandler->enqueue({ crawlItem });
+    m_robotsHandler->evaluateUrl(crawlItem);
 
     emit controlStateChanged(m_controlState);
 }
@@ -121,6 +132,7 @@ void CrawlerManager::stop()
     m_controlState = STOP;
 
     flushPedndingBatch();
+    m_robotsHandler->clear();
     m_urlFetcher->abortNetworkReplies();
     emit controlStateChanged(m_controlState);
 }
@@ -130,6 +142,8 @@ void CrawlerManager::clear()
     qDebug() << Q_FUNC_INFO;
     if (m_controlState == STOP) {
         flushPedndingBatch();
+        m_robotsHandler->clear();
+
         m_queueHandler->clearAll();
         m_pendingBatch.clear();
         emit clearUrls();

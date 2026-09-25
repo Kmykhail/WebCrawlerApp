@@ -5,6 +5,7 @@ add_executable(tests
     test_worker.cpp
     test_crawlerviewmodel.cpp
     MockServer/mockhttpserver.h MockServer/mockhttpserver.cpp
+    test_robotshandler.cpp
 )
 
 target_include_directories(tests

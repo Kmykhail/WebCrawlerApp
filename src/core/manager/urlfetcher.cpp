@@ -120,3 +120,52 @@ void UrlFetcher::abortNetworkReplies()
         reply->deleteLater();
     }
 }
+
+void UrlFetcher::onRequiredRobotsTxt(const CrawlItem &item)
+{
+    const auto &url = item.url;
+    const auto host = url.host();
+    if (host.isEmpty()) {
+        qWarning() << QStringLiteral("Empy host for url: %1").arg(url.toString());
+        return;
+    }
+    const QUrl robotsTxtUrl{host + "/robots.txt"};
+
+    QNetworkRequest request(robotsTxtUrl);
+    request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    QNetworkReply *reply = m_networkAccessManager->get(request);
+    if (!reply) return;
+
+    QTimer *timer = new QTimer{reply};
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, reply, [this, reply, item] {
+        emit robotsTxtCompleted({item, {}, TIMEOUT_CODE, false});
+        if (!reply->isFinished()) {
+            reply->abort();
+        }
+        reply->deleteLater();
+    });
+    timer->start(TIMEOUT_REQUEST_MS);
+
+    connect(reply, &QNetworkReply::finished, this, [this, robotsTxtUrl, item, reply] {
+        switch (auto error = reply->error(); error) {
+        case QNetworkReply::NoError:
+        {
+            auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
+            const auto html = reply->readAll();
+            emit robotsTxtCompleted({item, html, statusCode, true});
+
+            reply->deleteLater();
+
+            break;
+        }
+        default:
+            auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
+            emit robotsTxtCompleted({item, {}, statusCode, false});
+
+            reply->deleteLater();
+            break;
+        }
+    });
+}
