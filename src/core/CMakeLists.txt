@@ -12,6 +12,8 @@ add_library(project_core STATIC
     CrawlItem.h
     CrawlerState.h
     UrlData.h
+    manager/robotshandler.h
+    manager/robotshandler.cpp
 )
 
 target_include_directories(project_core

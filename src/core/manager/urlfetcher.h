@@ -26,8 +26,11 @@ public:
     qsizetype activeDownloads() const;
     void abortNetworkReplies();
 
+    void onRequiredRobotsTxt(const CrawlItem &item);
+
 signals:
     void fetched(const FetchResult &fetchResult);
+    void robotsTxtCompleted(const FetchResult &fetchResult);
 
 private:
     void replyFinished(QNetworkReply *reply);
