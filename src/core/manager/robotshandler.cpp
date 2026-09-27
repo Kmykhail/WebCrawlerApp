@@ -97,6 +97,7 @@ void RobotsHandler::parseRobotsTxt(const FetchResult &respond)
         return;
     }
 
+    // TODO rewrite this crappy robots.txt parser!!!
     QStringList currentUserAgents;
     QTextStream stream(html);
     while (!stream.atEnd()) {

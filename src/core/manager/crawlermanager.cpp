@@ -251,17 +251,6 @@ void CrawlerManager::evaluateFinishCondition()
                     .arg(noWaitingHosts);
 
     if (queueEmpty && noActiveDownloads && noActiveWorkers && noWaitingHosts) {
-        qDebug() << "Worker count: " << m_threadPool.activeThreadCount();
-        auto waiting = m_robotsHandler->getWaitingItems();
-        qDebug() << "Waiting hosts : " << waiting.size();
-
-        for (auto it = waiting.begin(); it != waiting.end(); ++it) {
-            qDebug() << "Host : " << it.key();
-            for (const auto &item: it.value()) {
-                qDebug() << "Waiting urls : " << item.url.toString();
-            }
-        }
-
         flushPedndingBatch();
         emit finished();
     }
