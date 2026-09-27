@@ -62,6 +62,7 @@ private:
     void processQueue();
     void clearThreadPool();
     void flushPedndingBatch();
+    void evaluateFinishCondition();
 
 private:
     UrlFetcher *m_urlFetcher{nullptr};

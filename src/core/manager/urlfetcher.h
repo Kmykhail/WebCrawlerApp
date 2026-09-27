@@ -37,9 +37,13 @@ private:
     void checkTimeout();
 
 private:
+    enum class RequestType {Page, Robots};
+    using enum RequestType;
+
     struct ActiveRequest{
         CrawlItem crawlItem;
         QElapsedTimer elapsedTimer;
+        RequestType type{Page};
     };
 
     QNetworkAccessManager *m_networkAccessManager{nullptr};

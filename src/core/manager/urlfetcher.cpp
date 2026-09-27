@@ -32,10 +32,9 @@ void UrlFetcher::executeNetworkRequest(const CrawlItem &crawlItem)
     QNetworkReply *reply = m_networkAccessManager->get(request);
     if (!reply) return;
 
-    ActiveRequest actiteReq;
-    actiteReq.crawlItem = crawlItem;
-    actiteReq.elapsedTimer.start();
-    m_activeReplies.insert(reply, actiteReq);
+    ActiveRequest activeReq {crawlItem, {}, Page};
+    activeReq.elapsedTimer.start();
+    m_activeReplies.insert(reply, activeReq);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply] {
         replyFinished(reply);
@@ -46,7 +45,7 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
 {
     if (!m_activeReplies.contains(reply)) return;
 
-    auto crawlItem = m_activeReplies.take(reply).crawlItem;
+    auto req = m_activeReplies.take(reply);
 
     switch (auto error = reply->error(); error) { // ignore `abort`
         case QNetworkReply::OperationCanceledError:
@@ -56,18 +55,31 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
         {
             auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
             auto html = reply->readAll();
-            reply->deleteLater();
 
-            emit fetched({crawlItem, html, statusCode, true});
+            if (req.type == Page) {
+                qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, NoError";
+                emit fetched({req.crawlItem, html, statusCode, true});
+            } else {
+                qDebug() << "ROBOTS TYPE: " << req.crawlItem.url.toString() << ", replyFinished, NoError";
+                emit robotsTxtCompleted({req.crawlItem, html, statusCode, true});
+            }
+
+            reply->deleteLater();
             break;
         }
         default: // for the rest errors
             auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
             qWarning() << QStringLiteral("Url: %1, responded with error status: %2")
-                              .arg(crawlItem.url.toString())
+                              .arg(req.crawlItem.url.toString())
                               .arg(statusCode);
 
-            emit fetched({crawlItem, {}, statusCode, false});
+            if (req.type == Page) {
+                qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, Error";
+                emit fetched({req.crawlItem, {}, statusCode, false});
+            } else {
+                qDebug() << "ROBOTS TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, Error";
+                emit robotsTxtCompleted({req.crawlItem, {}, statusCode, false});
+            }
             reply->deleteLater();
             break;
     }
@@ -87,7 +99,13 @@ void UrlFetcher::checkTimeout()
     for (auto *reply: timeoutReplies) {
         auto req = m_activeReplies.take(reply);
         qWarning() << QStringLiteral("Url: %1, timeout").arg(req.crawlItem.url.toString());
-        emit fetched({req.crawlItem, {}, TIMEOUT_CODE, false});
+        if (req.type == Page) {
+            qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", TIMEOUT";
+            emit fetched({req.crawlItem, {}, TIMEOUT_CODE, false});
+        } else {
+            qDebug() << "ROBOTS TYPE: " <<req.crawlItem.url.toString() << ", TIMEOUT";
+            emit robotsTxtCompleted({req.crawlItem, {}, TIMEOUT_CODE, false});
+        }
 
         if (reply && !reply->isFinished()) {
             reply->abort();
@@ -123,13 +141,12 @@ void UrlFetcher::abortNetworkReplies()
 
 void UrlFetcher::onRequiredRobotsTxt(const CrawlItem &item)
 {
-    const auto &url = item.url;
-    const auto host = url.host();
-    if (host.isEmpty()) {
-        qWarning() << QStringLiteral("Empy host for url: %1").arg(url.toString());
+    if (item.url.isEmpty() || item.url.host().isEmpty()) {
+        qWarning() << QStringLiteral("Invalid url for robots.txt");
         return;
     }
-    const QUrl robotsTxtUrl{host + "/robots.txt"};
+
+    const QUrl robotsTxtUrl = item.url.resolved(QUrl("/robots.txt"));
 
     QNetworkRequest request(robotsTxtUrl);
     request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
@@ -137,35 +154,10 @@ void UrlFetcher::onRequiredRobotsTxt(const CrawlItem &item)
     QNetworkReply *reply = m_networkAccessManager->get(request);
     if (!reply) return;
 
-    QTimer *timer = new QTimer{reply};
-    timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, reply, [this, reply, item] {
-        emit robotsTxtCompleted({item, {}, TIMEOUT_CODE, false});
-        if (!reply->isFinished()) {
-            reply->abort();
-        }
-        reply->deleteLater();
-    });
-    timer->start(TIMEOUT_REQUEST_MS);
-
-    connect(reply, &QNetworkReply::finished, this, [this, robotsTxtUrl, item, reply] {
-        switch (auto error = reply->error(); error) {
-        case QNetworkReply::NoError:
-        {
-            auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
-            const auto html = reply->readAll();
-            emit robotsTxtCompleted({item, html, statusCode, true});
-
-            reply->deleteLater();
-
-            break;
-        }
-        default:
-            auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
-            emit robotsTxtCompleted({item, {}, statusCode, false});
-
-            reply->deleteLater();
-            break;
-        }
+    ActiveRequest activeReq{item, {}, Robots};
+    activeReq.elapsedTimer.start();
+    m_activeReplies.insert(reply, activeReq);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]{
+        replyFinished(reply);
     });
 }

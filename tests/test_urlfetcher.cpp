@@ -4,6 +4,7 @@
 #include <QThread>
 #include "urlfetcher.h"
 #include "CrawlItem.h"
+#include "FetchResult.h"
 #include "MockServer/mockhttpserver.h"
 
 namespace {
@@ -80,6 +81,48 @@ TEST_F(UrlFetcherTest, FetchFromMockServer) {
     EXPECT_TRUE(result.success);
     EXPECT_EQ(result.html, "<html><body>Hello Mock Server</body></html>");
     EXPECT_EQ(result.statusCode, 200);
+}
+
+TEST_F(UrlFetcherTest, FetchRobotsTxt) {
+    MockHttpServer server;
+    ASSERT_TRUE(server.listen());
+
+    server.addRoute("/robots.txt", 200, "User-agent: *\nDisallow: /admin");
+    QSignalSpy spy(urlFetcher, &UrlFetcher::robotsTxtCompleted);
+
+    QString targetUrl = QString("http://127.0.0.1:%1/index.html").arg(server.port());
+    CrawlItem item{QUrl{targetUrl}, 0};
+
+    urlFetcher->onRequiredRobotsTxt(item);
+
+    bool signaled = spy.wait(1000);
+    EXPECT_TRUE(signaled);
+
+    auto args = spy.takeFirst();
+    auto result = args.at(0).value<FetchResult>();
+    EXPECT_TRUE(result.success);
+    EXPECT_EQ(result.html, "User-agent: *\nDisallow: /admin");
+    EXPECT_EQ(result.statusCode, 200);
+}
+
+TEST_F(UrlFetcherTest, RobotsTxtTimeout) {
+    MockHttpServer server;
+    ASSERT_TRUE(server.listen());
+    QSignalSpy spy(urlFetcher, &UrlFetcher::robotsTxtCompleted);
+
+    server.addRoute("/robots.txt", 200, "timeout", timeout_ms);
+    QString targetUrl = QString("http://127.0.0.1:%1/index.html").arg(server.port());
+    CrawlItem item{QUrl{targetUrl}, 0};
+
+    urlFetcher->onRequiredRobotsTxt(item);
+
+    bool signaled = spy.wait(timeout_ms + 500);
+    EXPECT_TRUE(signaled);
+
+    auto args = spy.takeFirst();
+    auto result = args.at(0).value<FetchResult>();
+    EXPECT_FALSE(result.success);
+    EXPECT_EQ(result.statusCode, 499);
 }
 
 int main(int argc, char **argv) {

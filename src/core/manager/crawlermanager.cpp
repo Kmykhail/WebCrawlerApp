@@ -48,7 +48,12 @@ CrawlerManager::CrawlerManager(QObject *parent)
 
         if (m_queueHandler->isUnderLimit()) {
             auto worker = new Worker(fetchResult.crawlItem, fetchResult.html);
-            connect(worker, &Worker::finished, m_robotsHandler, &RobotsHandler::evaluateUrls);
+            connect(worker, &Worker::finished, this, [this](const QSet<CrawlItem> &items){
+                if (m_queueHandler->isUnderLimit()) {
+                    m_robotsHandler->evaluateUrls(items);
+                }
+                processQueue();
+            });
             m_threadPool.start(worker);
         }
 
@@ -103,7 +108,6 @@ void CrawlerManager::start(const QString &url)
     m_controlState = RUN;
 
     const CrawlItem crawlItem{QUrl{url}, 0};
-    m_queueHandler->enqueue({ crawlItem });
     m_robotsHandler->evaluateUrl(crawlItem);
 
     emit controlStateChanged(m_controlState);
@@ -142,6 +146,7 @@ void CrawlerManager::clear()
     qDebug() << Q_FUNC_INFO;
     if (m_controlState == STOP) {
         flushPedndingBatch();
+        m_urlFetcher->abortNetworkReplies();
         m_robotsHandler->clear();
 
         m_queueHandler->clearAll();
@@ -195,12 +200,7 @@ void CrawlerManager::processQueue()
              << "active downloads:" << m_urlFetcher->activeDownloads()
              << "/" << MAX_CONCURRENT_DOWNLOADS;
 
-    if (!m_queueHandler->isUnderLimit() &&
-        !m_urlFetcher->activeDownloads() &&
-        m_queueHandler->isQueueEmpty()) {
-        flushPedndingBatch();
-        emit finished();
-    }
+    evaluateFinishCondition();
 }
 
 void CrawlerManager::onLinkScraping(const QSet<CrawlItem> &crawledItems)
@@ -230,5 +230,39 @@ void CrawlerManager::flushPedndingBatch()
     if (!m_pendingBatch.isEmpty()) {
         emit fetched(m_pendingBatch);
         m_pendingBatch.clear();
+    }
+}
+
+void CrawlerManager::evaluateFinishCondition()
+{
+    bool queueEmpty = m_queueHandler->isQueueEmpty();
+    bool noActiveDownloads = m_urlFetcher->activeDownloads() == 0;
+    bool noActiveWorkers = m_threadPool.activeThreadCount() == 0;
+    bool noWaitingHosts = m_robotsHandler->isWaitingHostsEmpty();
+
+    qDebug().noquote() << QStringLiteral("Finish check -> Queue empty: %1\n"
+                            "No active downloads: %2\n"
+                            "No active workers: %3\n"
+                            "No waiting hosts: %4\n"
+                            )
+                    .arg(queueEmpty)
+                    .arg(noActiveDownloads)
+                    .arg(noActiveWorkers)
+                    .arg(noWaitingHosts);
+
+    if (queueEmpty && noActiveDownloads && noActiveWorkers && noWaitingHosts) {
+        qDebug() << "Worker count: " << m_threadPool.activeThreadCount();
+        auto waiting = m_robotsHandler->getWaitingItems();
+        qDebug() << "Waiting hosts : " << waiting.size();
+
+        for (auto it = waiting.begin(); it != waiting.end(); ++it) {
+            qDebug() << "Host : " << it.key();
+            for (const auto &item: it.value()) {
+                qDebug() << "Waiting urls : " << item.url.toString();
+            }
+        }
+
+        flushPedndingBatch();
+        emit finished();
     }
 }

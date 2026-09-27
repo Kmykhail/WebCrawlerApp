@@ -21,6 +21,8 @@ public:
     void parseRobotsTxt(const FetchResult &respond);
     void clear();
 
+    bool isWaitingHostsEmpty() const;
+
 signals:
     void filtered(const QSet<CrawlItem> &crawlItems);
     void requiredRobotTxt(const CrawlItem &crawlItem);
@@ -32,7 +34,7 @@ private:
         bool isAllowed{false};
     };
 
-    void evaluateItemWithRules(const CrawlItem &crawlItem, const QList<RobotsRule> &rules);
+    bool evaluateItemWithRules(const CrawlItem &crawlItem, const QList<RobotsRule> &rules);
 
 private:
     QHash<QString, QList<RobotsRule>> m_robotsRules;
