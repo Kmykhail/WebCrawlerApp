@@ -26,17 +26,24 @@ public:
     qsizetype activeDownloads() const;
     void abortNetworkReplies();
 
+    void onRequiredRobotsTxt(const CrawlItem &item);
+
 signals:
     void fetched(const FetchResult &fetchResult);
+    void robotsTxtCompleted(const FetchResult &fetchResult);
 
 private:
     void replyFinished(QNetworkReply *reply);
     void checkTimeout();
 
 private:
+    enum class RequestType {Page, Robots};
+    using enum RequestType;
+
     struct ActiveRequest{
         CrawlItem crawlItem;
         QElapsedTimer elapsedTimer;
+        RequestType type{Page};
     };
 
     QNetworkAccessManager *m_networkAccessManager{nullptr};

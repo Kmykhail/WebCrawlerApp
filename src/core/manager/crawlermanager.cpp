@@ -20,6 +20,7 @@ CrawlerManager::CrawlerManager(QObject *parent)
     : QObject{parent}
     , m_urlFetcher{new UrlFetcher(this)}
     , m_queueHandler{new QueueHandler(this)}
+    , m_robotsHandler{new RobotsHandler(this)}
 {
     m_threadPool.setMaxThreadCount(QThread::idealThreadCount());
 
@@ -46,8 +47,13 @@ CrawlerManager::CrawlerManager(QObject *parent)
         m_pendingBatch.append(UrlData{fetchResult});
 
         if (m_queueHandler->isUnderLimit()) {
-            auto worker = new Worker(fetchResult.crawlItem, fetchResult.html);
-            connect(worker, &Worker::finished, this, &CrawlerManager::onLinkScraping);
+            auto worker = new Worker(fetchResult.crawlItem, fetchResult.content);
+            connect(worker, &Worker::finished, this, [this](const QSet<CrawlItem> &items){
+                if (m_queueHandler->isUnderLimit()) {
+                    m_robotsHandler->evaluateUrls(items);
+                }
+                processQueue();
+            });
             m_threadPool.start(worker);
         }
 
@@ -55,17 +61,24 @@ CrawlerManager::CrawlerManager(QObject *parent)
             processQueue();
         }
     });
+
     connect(m_queueHandler, &QueueHandler::urlsDiscovered, this, [this](const QList<CrawlItem> &batch) {
         auto urlDataList = batch
                            | std::ranges::views::transform([](const CrawlItem &item){ return UrlData{item}; })
                            | std::ranges::to<QList<UrlData>>();
         emit urlsDiscovered(urlDataList);
     });
+
+    connect(m_robotsHandler, &RobotsHandler::requiredRobotTxt, m_urlFetcher, &UrlFetcher::onRequiredRobotsTxt);
+    connect(m_urlFetcher, &UrlFetcher::robotsTxtCompleted, m_robotsHandler, &RobotsHandler::parseRobotsTxt);
+    connect(m_robotsHandler, &RobotsHandler::filtered, this, &CrawlerManager::onLinkScraping);
+
     connect(this, &CrawlerManager::controlStateChanged, this, [this](ControlState state) {
         if (state == RUN || state == RESUME) {
             processQueue();
         }
     });
+
     connect(this, &CrawlerManager::finished, this, [this]() {
         qDebug() << "Crawling process completed";
 
@@ -93,7 +106,9 @@ void CrawlerManager::start(const QString &url)
     }
 
     m_controlState = RUN;
-    m_queueHandler->enqueue({ CrawlItem{QUrl{url}, 0} });
+
+    const CrawlItem crawlItem{QUrl{url}, 0};
+    m_robotsHandler->evaluateUrl(crawlItem);
 
     emit controlStateChanged(m_controlState);
 }
@@ -122,6 +137,7 @@ void CrawlerManager::stop()
 
     flushPedndingBatch();
     m_urlFetcher->abortNetworkReplies();
+    m_robotsHandler->clear();
     emit controlStateChanged(m_controlState);
 }
 
@@ -130,6 +146,9 @@ void CrawlerManager::clear()
     qDebug() << Q_FUNC_INFO;
     if (m_controlState == STOP) {
         flushPedndingBatch();
+        m_urlFetcher->abortNetworkReplies();
+        m_robotsHandler->clear();
+
         m_queueHandler->clearAll();
         m_pendingBatch.clear();
         emit clearUrls();
@@ -181,12 +200,7 @@ void CrawlerManager::processQueue()
              << "active downloads:" << m_urlFetcher->activeDownloads()
              << "/" << MAX_CONCURRENT_DOWNLOADS;
 
-    if (!m_queueHandler->isUnderLimit() &&
-        !m_urlFetcher->activeDownloads() &&
-        m_queueHandler->isQueueEmpty()) {
-        flushPedndingBatch();
-        emit finished();
-    }
+    evaluateFinishCondition();
 }
 
 void CrawlerManager::onLinkScraping(const QSet<CrawlItem> &crawledItems)
@@ -216,5 +230,28 @@ void CrawlerManager::flushPedndingBatch()
     if (!m_pendingBatch.isEmpty()) {
         emit fetched(m_pendingBatch);
         m_pendingBatch.clear();
+    }
+}
+
+void CrawlerManager::evaluateFinishCondition()
+{
+    bool queueEmpty = m_queueHandler->isQueueEmpty();
+    bool noActiveDownloads = m_urlFetcher->activeDownloads() == 0;
+    bool noActiveWorkers = m_threadPool.activeThreadCount() == 0;
+    bool noWaitingHosts = m_robotsHandler->isWaitingHostsEmpty();
+
+    qDebug().noquote() << QStringLiteral("Finish check -> Queue empty: %1\n"
+                            "No active downloads: %2\n"
+                            "No active workers: %3\n"
+                            "No waiting hosts: %4\n"
+                            )
+                    .arg(queueEmpty)
+                    .arg(noActiveDownloads)
+                    .arg(noActiveWorkers)
+                    .arg(noWaitingHosts);
+
+    if (queueEmpty && noActiveDownloads && noActiveWorkers && noWaitingHosts) {
+        flushPedndingBatch();
+        emit finished();
     }
 }

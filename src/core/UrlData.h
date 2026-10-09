@@ -23,7 +23,7 @@ struct UrlData {
         , time(QTime::currentTime())
         , statusCode(fetchResult.statusCode)
         , depth(fetchResult.crawlItem.depth)
-        , htmlSize(fetchResult.html.size())
+        , htmlSize(fetchResult.content.size())
         , isFetched(fetchResult.success)
     {}
 

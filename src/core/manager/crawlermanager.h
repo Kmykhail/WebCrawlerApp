@@ -18,6 +18,7 @@
 
 #include "urlfetcher.h"
 #include "queuehandler.h"
+#include "robotshandler.h"
 
 class CrawlerManager : public QObject
 {
@@ -61,10 +62,12 @@ private:
     void processQueue();
     void clearThreadPool();
     void flushPedndingBatch();
+    void evaluateFinishCondition();
 
 private:
     UrlFetcher *m_urlFetcher{nullptr};
     QueueHandler *m_queueHandler{nullptr};
+    RobotsHandler *m_robotsHandler{nullptr};
     QTimer *m_queueUpdataTimer{nullptr};
     qint32 m_lastEmittedQueueSize{-1};
 

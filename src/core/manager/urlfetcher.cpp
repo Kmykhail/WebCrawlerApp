@@ -32,10 +32,9 @@ void UrlFetcher::executeNetworkRequest(const CrawlItem &crawlItem)
     QNetworkReply *reply = m_networkAccessManager->get(request);
     if (!reply) return;
 
-    ActiveRequest actiteReq;
-    actiteReq.crawlItem = crawlItem;
-    actiteReq.elapsedTimer.start();
-    m_activeReplies.insert(reply, actiteReq);
+    ActiveRequest activeReq {crawlItem, {}, Page};
+    activeReq.elapsedTimer.start();
+    m_activeReplies.insert(reply, activeReq);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply] {
         replyFinished(reply);
@@ -46,7 +45,7 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
 {
     if (!m_activeReplies.contains(reply)) return;
 
-    auto crawlItem = m_activeReplies.take(reply).crawlItem;
+    auto req = m_activeReplies.take(reply);
 
     switch (auto error = reply->error(); error) { // ignore `abort`
         case QNetworkReply::OperationCanceledError:
@@ -56,18 +55,27 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
         {
             auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
             auto html = reply->readAll();
-            reply->deleteLater();
 
-            emit fetched({crawlItem, html, statusCode, true});
+            if (req.type == Page) {
+                emit fetched({req.crawlItem, html, statusCode, true});
+            } else {
+                emit robotsTxtCompleted({req.crawlItem, html, statusCode, true});
+            }
+
+            reply->deleteLater();
             break;
         }
         default: // for the rest errors
             auto statusCode = static_cast<quint16>(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt());
             qWarning() << QStringLiteral("Url: %1, responded with error status: %2")
-                              .arg(crawlItem.url.toString())
+                              .arg(req.crawlItem.url.toString())
                               .arg(statusCode);
 
-            emit fetched({crawlItem, {}, statusCode, false});
+            if (req.type == Page) {
+                emit fetched({req.crawlItem, {}, statusCode, false});
+            } else {
+                emit robotsTxtCompleted({req.crawlItem, {}, statusCode, false});
+            }
             reply->deleteLater();
             break;
     }
@@ -87,7 +95,11 @@ void UrlFetcher::checkTimeout()
     for (auto *reply: timeoutReplies) {
         auto req = m_activeReplies.take(reply);
         qWarning() << QStringLiteral("Url: %1, timeout").arg(req.crawlItem.url.toString());
-        emit fetched({req.crawlItem, {}, TIMEOUT_CODE, false});
+        if (req.type == Page) {
+            emit fetched({req.crawlItem, {}, TIMEOUT_CODE, false});
+        } else {
+            emit robotsTxtCompleted({req.crawlItem, {}, TIMEOUT_CODE, false});
+        }
 
         if (reply && !reply->isFinished()) {
             reply->abort();
@@ -114,9 +126,33 @@ void UrlFetcher::abortNetworkReplies()
 
     auto repliesToAbort = m_activeReplies.keys();
     for (auto *reply: repliesToAbort) {
-        if (reply && !reply->isFinished()) {
-            reply->abort();
-        }
+        if (!reply) continue;
+
+        if (!reply->isFinished()) reply->abort();
+
         reply->deleteLater();
     }
+}
+
+void UrlFetcher::onRequiredRobotsTxt(const CrawlItem &item)
+{
+    if (item.url.isEmpty() || item.url.host().isEmpty()) {
+        qWarning() << QStringLiteral("Invalid url for robots.txt");
+        return;
+    }
+
+    const QUrl robotsTxtUrl = item.url.resolved(QUrl("/robots.txt"));
+
+    QNetworkRequest request(robotsTxtUrl);
+    request.setHeader(QNetworkRequest::UserAgentHeader, m_header);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    QNetworkReply *reply = m_networkAccessManager->get(request);
+    if (!reply) return;
+
+    ActiveRequest activeReq{item, {}, Robots};
+    activeReq.elapsedTimer.start();
+    m_activeReplies.insert(reply, activeReq);
+    connect(reply, &QNetworkReply::finished, this, [this, reply]{
+        replyFinished(reply);
+    });
 }
