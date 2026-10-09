@@ -33,12 +33,15 @@ private:
         QString path;
         bool isAllowed{false};
     };
+    using RobotsRulesByAgent = QHash<QString, QList<RobotsRule>>;
 
     bool evaluateItemWithRules(const CrawlItem &crawlItem, const QList<RobotsRule> &rules);
+    void parse(const QByteArray &content, RobotsRulesByAgent &rules);
+    const QList<RobotsRule> *rulesForHost(const QString &host) const;
 
 private:
-    QHash<QString, QList<RobotsRule>> m_robotsRules;
+
+    QHash<QString, RobotsRulesByAgent> m_robotsRules;
     QHash<QString, QSet<CrawlItem>> m_waitingItemsByHost;
-    QSet<QString> m_parsedHosts;
     QString m_userAgent{"*"};
 };

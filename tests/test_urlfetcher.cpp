@@ -79,7 +79,7 @@ TEST_F(UrlFetcherTest, FetchFromMockServer) {
     auto args = spy.takeFirst();
     auto result = args.at(0).value<FetchResult>();
     EXPECT_TRUE(result.success);
-    EXPECT_EQ(result.html, "<html><body>Hello Mock Server</body></html>");
+    EXPECT_EQ(result.content, "<html><body>Hello Mock Server</body></html>");
     EXPECT_EQ(result.statusCode, 200);
 }
 
@@ -101,7 +101,7 @@ TEST_F(UrlFetcherTest, FetchRobotsTxt) {
     auto args = spy.takeFirst();
     auto result = args.at(0).value<FetchResult>();
     EXPECT_TRUE(result.success);
-    EXPECT_EQ(result.html, "User-agent: *\nDisallow: /admin");
+    EXPECT_EQ(result.content, "User-agent: *\nDisallow: /admin");
     EXPECT_EQ(result.statusCode, 200);
 }
 

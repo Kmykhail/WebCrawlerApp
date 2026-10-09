@@ -47,7 +47,7 @@ CrawlerManager::CrawlerManager(QObject *parent)
         m_pendingBatch.append(UrlData{fetchResult});
 
         if (m_queueHandler->isUnderLimit()) {
-            auto worker = new Worker(fetchResult.crawlItem, fetchResult.html);
+            auto worker = new Worker(fetchResult.crawlItem, fetchResult.content);
             connect(worker, &Worker::finished, this, [this](const QSet<CrawlItem> &items){
                 if (m_queueHandler->isUnderLimit()) {
                     m_robotsHandler->evaluateUrls(items);
@@ -136,8 +136,8 @@ void CrawlerManager::stop()
     m_controlState = STOP;
 
     flushPedndingBatch();
-    m_robotsHandler->clear();
     m_urlFetcher->abortNetworkReplies();
+    m_robotsHandler->clear();
     emit controlStateChanged(m_controlState);
 }
 

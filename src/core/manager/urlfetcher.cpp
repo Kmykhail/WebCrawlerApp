@@ -57,10 +57,8 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
             auto html = reply->readAll();
 
             if (req.type == Page) {
-                qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, NoError";
                 emit fetched({req.crawlItem, html, statusCode, true});
             } else {
-                qDebug() << "ROBOTS TYPE: " << req.crawlItem.url.toString() << ", replyFinished, NoError";
                 emit robotsTxtCompleted({req.crawlItem, html, statusCode, true});
             }
 
@@ -74,10 +72,8 @@ void UrlFetcher::replyFinished(QNetworkReply *reply)
                               .arg(statusCode);
 
             if (req.type == Page) {
-                qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, Error";
                 emit fetched({req.crawlItem, {}, statusCode, false});
             } else {
-                qDebug() << "ROBOTS TYPE: " <<req.crawlItem.url.toString() << ", replyFinished, Error";
                 emit robotsTxtCompleted({req.crawlItem, {}, statusCode, false});
             }
             reply->deleteLater();
@@ -100,10 +96,8 @@ void UrlFetcher::checkTimeout()
         auto req = m_activeReplies.take(reply);
         qWarning() << QStringLiteral("Url: %1, timeout").arg(req.crawlItem.url.toString());
         if (req.type == Page) {
-            qDebug() << "PAGE TYPE: " <<req.crawlItem.url.toString() << ", TIMEOUT";
             emit fetched({req.crawlItem, {}, TIMEOUT_CODE, false});
         } else {
-            qDebug() << "ROBOTS TYPE: " <<req.crawlItem.url.toString() << ", TIMEOUT";
             emit robotsTxtCompleted({req.crawlItem, {}, TIMEOUT_CODE, false});
         }
 
@@ -132,9 +126,10 @@ void UrlFetcher::abortNetworkReplies()
 
     auto repliesToAbort = m_activeReplies.keys();
     for (auto *reply: repliesToAbort) {
-        if (reply && !reply->isFinished()) {
-            reply->abort();
-        }
+        if (!reply) continue;
+
+        if (!reply->isFinished()) reply->abort();
+
         reply->deleteLater();
     }
 }

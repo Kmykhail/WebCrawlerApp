@@ -6,7 +6,7 @@
 
 struct FetchResult {
     CrawlItem crawlItem;
-    QByteArray html;
+    QByteArray content;
     quint16 statusCode;
     bool success;
 };
